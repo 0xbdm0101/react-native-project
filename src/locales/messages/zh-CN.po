@@ -24,3 +24,7 @@ msgstr "我是大前端工程师"
 #: src/pages/Home/index.tsx
 msgid "欢迎"
 msgstr "欢迎"
+
+#: src/pages/Home/index.tsx
+msgid "这是一个 Tamagui 弹窗"
+msgstr "这是一个 Tamagui 弹窗"

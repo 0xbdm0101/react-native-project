@@ -1,16 +1,19 @@
-import React from "react";
+import React, { useRef } from "react";
 import { StyleSheet, Text, View, Pressable } from "react-native";
-import { Trans } from "@lingui/macro";
+import { Trans, t } from "@lingui/macro";
 import { useLingui } from "@lingui/react";
 import { useLanguage } from "@/provider/I18nProvider";
 import { LOCALES } from "@/locales/config";
+import DialogComp, { DialogRef } from "@/components/Dialog";
 
 export function Home() {
-  useLingui();
+  const { i18n } = useLingui();
   const { currentLanguage, changeLanguage } = useLanguage();
+  const dialogRef = useRef<DialogRef>(null);
 
   return (
     <View style={styles.container}>
+      <Text style={styles.text}>欢迎111</Text>
       <Text style={styles.text}>
         <Trans>欢迎</Trans>
       </Text>
@@ -42,6 +45,19 @@ export function Home() {
           <Text style={styles.langBtnText}>EN</Text>
         </Pressable>
       </View>
+
+      <Pressable
+        style={[styles.langBtn, { marginTop: 32 }]}
+        onPress={() => dialogRef.current?.openDialog()}
+      >
+        <Text style={styles.langBtnText}>打开弹窗</Text>
+      </Pressable>
+
+      <DialogComp ref={dialogRef} title="提示" isShowClose>
+        <Text style={{ color: "#fff", fontSize: 16 }}>
+          {i18n._(t`这是一个 Tamagui 弹窗`)}
+        </Text>
+      </DialogComp>
     </View>
   );
 }

@@ -24,3 +24,7 @@ msgstr "I am a full-stack frontend engineer"
 #: src/pages/Home/index.tsx
 msgid "欢迎"
 msgstr "Welcome"
+
+#: src/pages/Home/index.tsx
+msgid "这是一个 Tamagui 弹窗"
+msgstr "This is a Tamagui dialog"

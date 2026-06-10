@@ -13,7 +13,7 @@ import React from "react";
  */
 export function composeProviders(
   ...providers: Array<
-    | [React.ComponentType<React.PropsWithChildren>, Record<string, unknown>?]
+    | [React.ComponentType<any>, Record<string, unknown>?]
     | React.ComponentType<React.PropsWithChildren>
   >
 ) {
