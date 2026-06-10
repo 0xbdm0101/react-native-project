@@ -4,12 +4,17 @@
   "main": "index.ts",
   "private": true,
   "scripts": {
+    "prestart": "npm run messages:compile",
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "android": "npm run messages:compile && expo run:android",
+    "ios": "npm run messages:compile && expo run:ios",
+    "web": "npm run messages:compile && expo start --web",
+    "messages:extract": "lingui extract",
+    "messages:compile": "lingui compile --typescript"
   },
   "dependencies": {
+    "@lingui/core": "^4.14.1",
+    "@lingui/react": "^4.14.1",
     "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~54.0.0",
     "expo-constants": "~18.0.13",
@@ -19,7 +24,10 @@
     "swr": "^2.4.1"
   },
   "devDependencies": {
+    "@lingui/cli": "^4.14.1",
+    "@lingui/macro": "^4.14.1",
     "@types/react": "~19.1.0",
+    "babel-plugin-macros": "^3.1.0",
     "babel-plugin-module-resolver": "^5.0.3",
     "typescript": "~5.9.2"
   }

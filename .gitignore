@@ -39,3 +39,6 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# lingui compiled catalogs (generated from .po)
+src/locales/messages/*.ts
