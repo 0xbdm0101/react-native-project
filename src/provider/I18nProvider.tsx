@@ -5,6 +5,7 @@ import { dynamicActivate } from "@/locales";
 import { DEFAULT_LOCALE, LOCALES } from "@/locales/config";
 import { LG_VERSION_LANG } from "@/config/cache";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import appState, { hydrateAppStore } from "@/store/app";
 
 // ==================== Language Context ====================
 
@@ -31,11 +32,9 @@ export const I18nProvider = ({ children }: React.PropsWithChildren) => {
   useEffect(() => {
     (async () => {
       try {
-        const saved = await AsyncStorage.getItem(LG_VERSION_LANG);
-        const locale =
-          saved && Object.values(LOCALES).includes(saved as LOCALES)
-            ? saved
-            : DEFAULT_LOCALE;
+        // 从 AsyncStorage 恢复语言到 valtio store
+        await hydrateAppStore();
+        const locale = appState.currentLanguage;
         await dynamicActivate(locale);
         setCurrentLanguage(locale);
       } catch {
@@ -49,6 +48,7 @@ export const I18nProvider = ({ children }: React.PropsWithChildren) => {
   const changeLanguage = useCallback(async (locale: string) => {
     await dynamicActivate(locale);
     setCurrentLanguage(locale);
+    appState.currentLanguage = locale as LOCALES;
     await AsyncStorage.setItem(LG_VERSION_LANG, locale);
   }, []);
 

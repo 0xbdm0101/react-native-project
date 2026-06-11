@@ -1,5 +1,6 @@
 import { forwardRef, useImperativeHandle, useState } from "react";
 import { XStack, YStack, styled, Dialog as TamDialog, Text } from "tamagui";
+import { Ionicons } from "@expo/vector-icons";
 
 export interface DialogCompProps {
   title: React.ReactNode | string;
@@ -56,7 +57,7 @@ const DialogComp = forwardRef<DialogRef, DialogCompProps>(
               </YStack>
               {isShowClose && (
                 <TamDialog.Close onPress={() => handleChange(false)}>
-                  <Text>x</Text>
+                  <Ionicons name="close" size={24} color="#000" />
                 </TamDialog.Close>
               )}
             </XStack>

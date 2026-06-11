@@ -19,6 +19,8 @@
     "@react-native-async-storage/async-storage": "2.2.0",
     "@tamagui/config": "^2.2.0",
     "@tamagui/font-inter": "^2.2.0",
+    "crypto-js": "^4.2.0",
+    "derive-valtio": "^0.2.0",
     "expo": "~54.0.0",
     "expo-constants": "~18.0.13",
     "expo-status-bar": "~3.0.9",
@@ -29,11 +31,13 @@
     "react-native-screens": "~4.16.0",
     "react-native-web": "^0.21.0",
     "swr": "^2.4.1",
-    "tamagui": "^2.2.0"
+    "tamagui": "^2.2.0",
+    "valtio": "^2.3.2"
   },
   "devDependencies": {
     "@lingui/cli": "^4.14.1",
     "@lingui/macro": "^4.14.1",
+    "@types/crypto-js": "^4.2.2",
     "@types/react": "~19.1.0",
     "babel-plugin-macros": "^3.1.0",
     "babel-plugin-module-resolver": "^5.0.3",

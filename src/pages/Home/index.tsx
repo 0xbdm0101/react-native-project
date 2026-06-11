@@ -54,7 +54,7 @@ export function Home() {
       </Pressable>
 
       <DialogComp ref={dialogRef} title="提示" isShowClose>
-        <Text style={{ color: "#fff", fontSize: 16 }}>
+        <Text style={{ color: "#000", fontSize: 16 }}>
           {i18n._(t`这是一个 Tamagui 弹窗`)}
         </Text>
       </DialogComp>
