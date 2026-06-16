@@ -1,11 +1,21 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
+import { useRouter } from "expo-router";
 import { TopBar } from "./components/TopBar";
 import { MenuGrid } from "./components/MenuGrid";
 
+const ROUTE_MAP: Record<string, string> = {
+  iot: "/device-list",
+};
+
 export function Home() {
+  const router = useRouter();
+
   const handlePressItem = (key: string) => {
-    console.log("pressed:", key);
+    const route = ROUTE_MAP[key];
+    if (route) {
+      router.push(route);
+    }
   };
 
   return (

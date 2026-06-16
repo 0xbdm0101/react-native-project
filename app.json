@@ -9,7 +9,10 @@
     "scheme": "my-app-rn",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.my-app-rn"
+      "bundleIdentifier": "com.anonymous.my-app-rn",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -27,6 +30,12 @@
     "plugins": [
       "expo-asset",
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ee56e2de-948d-44bf-91f7-4f7e237b6d76"
+      }
+    }
   }
 }

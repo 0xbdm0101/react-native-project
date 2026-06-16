@@ -1,12 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, View, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-
-export interface MenuItemData {
-  key: string;
-  icon: string;
-  label: string;
-}
+import { MenuItemData } from "../constants";
 
 interface MenuIconProps {
   item: MenuItemData;
