@@ -1,0 +1,12 @@
+{
+  "name": "ble-temp-humidity-simulator",
+  "version": "1.0.0",
+  "description": "模拟 BLE 温湿度传感器",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@abandonware/bleno": "^0.6.4"
+  }
+}
