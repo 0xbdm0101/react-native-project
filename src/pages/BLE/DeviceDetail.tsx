@@ -37,10 +37,12 @@ export function DeviceDetail({ device, onDisconnect, onBack }: DeviceDetailProps
   const [sensorData, setSensorData] = useState<{ temperature?: number; humidity?: number; battery?: number }>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentRSSI, setCurrentRSSI] = useState<number | null>(device.rssi);
 
   // 发现服务和特征值
   useEffect(() => {
     discoverServices();
+    startRSSIUpdates();
 
     // 监听设备断开事件（比如盖上盖子）
     const subscription = device.onDisconnected((error, disconnectedDevice) => {
@@ -55,6 +57,24 @@ export function DeviceDetail({ device, onDisconnect, onBack }: DeviceDetailProps
       subscription.remove();
     };
   }, []);
+
+  // 定期更新 RSSI
+  const startRSSIUpdates = () => {
+    const interval = setInterval(async () => {
+      try {
+        const updatedDevice = await device.readRSSI();
+        if (updatedDevice.rssi !== null) {
+          setCurrentRSSI(updatedDevice.rssi);
+        }
+      } catch (err) {
+        // 忽略 RSSI 读取失败
+        console.log("读取 RSSI 失败:", err);
+      }
+    }, 10000); // 每 10 秒更新一次
+
+    // 清理定时器
+    return () => clearInterval(interval);
+  };
 
   const discoverServices = async () => {
     try {
@@ -338,7 +358,7 @@ export function DeviceDetail({ device, onDisconnect, onBack }: DeviceDetailProps
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>信号强度</Text>
-            <Text style={styles.infoValue}>{device.rssi} dBm</Text>
+            <Text style={styles.infoValue}>{currentRSSI ? `${currentRSSI} dBm` : '读取中...'}</Text>
           </View>
         </View>
 
