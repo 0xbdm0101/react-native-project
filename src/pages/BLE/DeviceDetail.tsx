@@ -8,29 +8,52 @@ import { Buffer } from "buffer";
 interface DeviceDetailProps {
   device: Device;
   onDisconnect: () => void;
+  onBack?: () => void;
 }
 
 // 标准 BLE UUID
 const STANDARD_UUIDS: Record<string, string> = {
+  '180A': '设备信息服务',
+  '180F': '电池服务',
   '181A': '环境传感服务',
   '2A6E': '温度',
   '2A6F': '湿度',
   '2A00': '设备名称',
   '2A01': '外观',
   '2A04': '连接参数',
+  '2A19': '电池电量',
+  '2A29': '制造商名称',
+  '2A24': '型号',
+  '2A25': '序列号',
+  '2A26': '固件版本',
+  '2A27': '硬件版本',
+  '2A28': '软件版本',
 };
 
-export function DeviceDetail({ device, onDisconnect }: DeviceDetailProps) {
+export function DeviceDetail({ device, onDisconnect, onBack }: DeviceDetailProps) {
   const router = useRouter();
   const [services, setServices] = useState<Service[]>([]);
   const [characteristics, setCharacteristics] = useState<Map<string, Characteristic[]>>(new Map());
-  const [sensorData, setSensorData] = useState<{ temperature?: number; humidity?: number }>({});
+  const [sensorData, setSensorData] = useState<{ temperature?: number; humidity?: number; battery?: number }>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // 发现服务和特征值
   useEffect(() => {
     discoverServices();
+
+    // 监听设备断开事件（比如盖上盖子）
+    const subscription = device.onDisconnected((error, disconnectedDevice) => {
+      console.log("设备断开，自动返回列表");
+      // 设备已断开，只需要返回列表，不需要再次断开
+      if (onBack) {
+        onBack();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
   }, []);
 
   const discoverServices = async () => {
@@ -41,16 +64,25 @@ export function DeviceDetail({ device, onDisconnect }: DeviceDetailProps) {
       // 发现所有服务
       const discoveredServices = await device.services();
       setServices(discoveredServices);
+      console.log('📋 发现服务数量:', discoveredServices.length);
 
       // 发现每个服务的特征值
       const charsMap = new Map<string, Characteristic[]>();
       for (const service of discoveredServices) {
         const chars = await device.characteristicsForService(service.uuid);
         charsMap.set(service.uuid, chars);
+        console.log(`📦 服务 ${getUUIDName(service.uuid)} (${service.uuid}):`);
+        chars.forEach(char => {
+          const properties = [];
+          if (char.isReadable) properties.push('可读');
+          if (char.isWritableWithResponse) properties.push('可写');
+          if (char.isNotifiable) properties.push('可通知');
+          console.log(`  - ${getUUIDName(char.uuid)} (${char.uuid}) [${properties.join(', ')}]`);
+        });
       }
       setCharacteristics(charsMap);
 
-      // 自动读取温湿度数据
+      // 自动读取传感器数据
       await readSensorData(charsMap);
     } catch (err: any) {
       console.error('发现服务失败:', err);
@@ -77,6 +109,20 @@ export function DeviceDetail({ device, onDisconnect }: DeviceDetailProps) {
             const humValue = parseHumidity(humChar.value);
             setSensorData(prev => ({ ...prev, humidity: humValue }));
             console.log('💧 湿度:', humValue);
+          } else if (char.uuid === '2A19') {
+            // 读取电池电量
+            const batteryChar = await char.read();
+            const batteryValue = parseBattery(batteryChar.value);
+            setSensorData(prev => ({ ...prev, battery: batteryValue }));
+            console.log('🔋 电池:', batteryValue);
+          } else if (char.isReadable) {
+            // 尝试读取其他可读特征值
+            try {
+              const value = await char.read();
+              console.log(`📖 读取 ${getUUIDName(char.uuid)}:`, value.value);
+            } catch (e) {
+              // 忽略读取失败的特征值
+            }
           }
         }
       }
@@ -99,6 +145,13 @@ export function DeviceDetail({ device, onDisconnect }: DeviceDetailProps) {
     const buffer = Buffer.from(base64Value, 'base64');
     const value = buffer.readUInt16LE(0);
     return value / 100;
+  };
+
+  // 解析电池电量 (0-100%)
+  const parseBattery = (base64Value: string | null): number => {
+    if (!base64Value) return 0;
+    const buffer = Buffer.from(base64Value, 'base64');
+    return buffer.readUInt8(0);
   };
 
   // 订阅温度更新
@@ -149,11 +202,25 @@ export function DeviceDetail({ device, onDisconnect }: DeviceDetailProps) {
 
   // 渲染传感器数据卡片
   const renderSensorCard = () => {
-    if (!sensorData.temperature && !sensorData.humidity) return null;
+    const hasData = sensorData.temperature !== undefined ||
+                    sensorData.humidity !== undefined ||
+                    sensorData.battery !== undefined;
+
+    if (!hasData) return null;
 
     return (
       <View style={styles.sensorCard}>
         <Text style={styles.cardTitle}>📊 实时数据</Text>
+
+        {sensorData.battery !== undefined && (
+          <View style={styles.dataRow}>
+            <Ionicons name="battery-full" size={24} color="#4CAF50" />
+            <View style={styles.dataInfo}>
+              <Text style={styles.dataLabel}>电池电量</Text>
+              <Text style={styles.dataValue}>{sensorData.battery}%</Text>
+            </View>
+          </View>
+        )}
 
         {sensorData.temperature !== undefined && (
           <View style={styles.dataRow}>
@@ -176,12 +243,16 @@ export function DeviceDetail({ device, onDisconnect }: DeviceDetailProps) {
         )}
 
         <View style={styles.buttonRow}>
-          <Pressable style={styles.subscribeBtn} onPress={subscribeTemperature}>
-            <Text style={styles.subscribeBtnText}>订阅温度更新</Text>
-          </Pressable>
-          <Pressable style={styles.subscribeBtn} onPress={subscribeHumidity}>
-            <Text style={styles.subscribeBtnText}>订阅湿度更新</Text>
-          </Pressable>
+          {sensorData.temperature !== undefined && (
+            <Pressable style={styles.subscribeBtn} onPress={subscribeTemperature}>
+              <Text style={styles.subscribeBtnText}>订阅温度</Text>
+            </Pressable>
+          )}
+          {sensorData.humidity !== undefined && (
+            <Pressable style={styles.subscribeBtn} onPress={subscribeHumidity}>
+              <Text style={styles.subscribeBtnText}>订阅湿度</Text>
+            </Pressable>
+          )}
         </View>
       </View>
     );
@@ -189,6 +260,16 @@ export function DeviceDetail({ device, onDisconnect }: DeviceDetailProps) {
 
   // 渲染服务列表
   const renderServices = () => {
+    if (services.length === 0) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="information-circle" size={40} color="#666" />
+          <Text style={styles.emptyText}>未发现服务</Text>
+          <Text style={styles.emptySubtext}>设备可能不支持标准 BLE 服务</Text>
+        </View>
+      );
+    }
+
     return services.map((service) => (
       <View key={service.uuid} style={styles.serviceItem}>
         <View style={styles.serviceHeader}>
@@ -198,20 +279,24 @@ export function DeviceDetail({ device, onDisconnect }: DeviceDetailProps) {
         <Text style={styles.serviceUUIDFull}>{service.uuid}</Text>
 
         {/* 特征值列表 */}
-        {characteristics.get(service.uuid)?.map((char) => (
-          <View key={char.uuid} style={styles.charItem}>
-            <View style={styles.charHeader}>
-              <Ionicons name="settings" size={16} color="#888" />
-              <Text style={styles.charUUID}>{getUUIDName(char.uuid)}</Text>
+        {characteristics.get(service.uuid)?.length === 0 ? (
+          <Text style={styles.noCharsText}>无特征值</Text>
+        ) : (
+          characteristics.get(service.uuid)?.map((char) => (
+            <View key={char.uuid} style={styles.charItem}>
+              <View style={styles.charHeader}>
+                <Ionicons name="settings" size={16} color="#888" />
+                <Text style={styles.charUUID}>{getUUIDName(char.uuid)}</Text>
+              </View>
+              <Text style={styles.charUUIDFull}>{char.uuid}</Text>
+              <View style={styles.charProperties}>
+                {char.isReadable && <Text style={styles.propertyBadge}>可读</Text>}
+                {char.isWritableWithResponse && <Text style={styles.propertyBadge}>可写</Text>}
+                {char.isNotifiable && <Text style={styles.propertyBadge}>可通知</Text>}
+              </View>
             </View>
-            <Text style={styles.charUUIDFull}>{char.uuid}</Text>
-            <View style={styles.charProperties}>
-              {char.isReadable && <Text style={styles.propertyBadge}>可读</Text>}
-              {char.isWritableWithResponse && <Text style={styles.propertyBadge}>可写</Text>}
-              {char.isNotifiable && <Text style={styles.propertyBadge}>可通知</Text>}
-            </View>
-          </View>
-        ))}
+          ))
+        )}
       </View>
     ));
   };
@@ -220,13 +305,21 @@ export function DeviceDetail({ device, onDisconnect }: DeviceDetailProps) {
     <View style={styles.container}>
       {/* 头部 */}
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+        <Pressable onPress={() => {
+          // 返回按钮：只返回列表，保持连接
+          if (onBack) {
+            onBack();
+          }
+        }} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={24} color="#fff" />
         </Pressable>
         <Text style={styles.headerTitle} numberOfLines={1}>
           {device.name || '未知设备'}
         </Text>
-        <Pressable onPress={onDisconnect} style={styles.disconnectBtn}>
+        <Pressable onPress={() => {
+          // 断开按钮：断开连接 + 返回列表
+          onDisconnect();
+        }} style={styles.disconnectBtn}>
           <Text style={styles.disconnectText}>断开</Text>
         </Pressable>
       </View>
@@ -453,6 +546,26 @@ const styles = StyleSheet.create({
     color: '#888',
     fontSize: 14,
     marginTop: 10,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: 30,
+  },
+  emptyText: {
+    color: '#888',
+    fontSize: 16,
+    marginTop: 10,
+  },
+  emptySubtext: {
+    color: '#666',
+    fontSize: 13,
+    marginTop: 4,
+  },
+  noCharsText: {
+    color: '#666',
+    fontSize: 12,
+    marginLeft: 28,
+    marginTop: 4,
   },
   errorContainer: {
     alignItems: 'center',

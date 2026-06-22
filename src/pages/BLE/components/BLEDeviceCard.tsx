@@ -1,12 +1,14 @@
 import React from "react";
-import { StyleSheet, Text, View, Pressable } from "react-native";
+import { StyleSheet, Text, View, Pressable, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Device } from "react-native-ble-plx";
-import { getSignalStrength, formatRSSI } from "../constants";
+import { getSignalStrength, formatRSSI, ConnectionStatus } from "../constants";
+import { getDeviceIcon, getDeviceCategory } from "../ble-protocols";
 
 interface BLEDeviceCardProps {
   device: Device;
   isConnected?: boolean;
+  connectionStatus?: ConnectionStatus;
   onPress?: (device: Device) => void;
   onConnect?: (device: Device) => void;
 }
@@ -14,12 +16,15 @@ interface BLEDeviceCardProps {
 export function BLEDeviceCard({
   device,
   isConnected = false,
+  connectionStatus = ConnectionStatus.IDLE,
   onPress,
   onConnect,
 }: BLEDeviceCardProps) {
   const signal = getSignalStrength(device.rssi);
   const deviceName = device.name || "未知设备";
   const deviceId = device.id.substring(0, 8).toUpperCase();
+  const deviceIcon = getDeviceIcon(deviceName);
+  const deviceCategory = getDeviceCategory(deviceName);
 
   return (
     <Pressable
@@ -28,7 +33,7 @@ export function BLEDeviceCard({
     >
       <View style={styles.iconWrap}>
         <Ionicons
-          name="bluetooth"
+          name={deviceIcon as any}
           size={28}
           color={isConnected ? "#4CAF50" : "#4FC3F7"}
         />
@@ -39,6 +44,7 @@ export function BLEDeviceCard({
           {deviceName}
         </Text>
         <Text style={styles.deviceId}>ID: {deviceId}...</Text>
+        <Text style={styles.deviceCategory}>{deviceCategory}</Text>
         <View style={styles.signalRow}>
           <View style={[styles.signalDot, { backgroundColor: signal.color }]} />
           <Text style={styles.signalText}>{signal.label}</Text>
@@ -51,6 +57,11 @@ export function BLEDeviceCard({
           <View style={styles.connectedBadge}>
             <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
             <Text style={styles.connectedText}>已连接</Text>
+          </View>
+        ) : connectionStatus === ConnectionStatus.CONNECTING ? (
+          <View style={styles.connectingBadge}>
+            <ActivityIndicator size="small" color="#4FC3F7" />
+            <Text style={styles.connectingText}>连接中</Text>
           </View>
         ) : (
           <Pressable
@@ -101,6 +112,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 2,
   },
+  deviceCategory: {
+    color: "#666",
+    fontSize: 11,
+    marginTop: 2,
+  },
   signalRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -132,6 +148,15 @@ const styles = StyleSheet.create({
   },
   connectedText: {
     color: "#4CAF50",
+    fontSize: 12,
+  },
+  connectingBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  connectingText: {
+    color: "#4FC3F7",
     fontSize: 12,
   },
   connectBtn: {

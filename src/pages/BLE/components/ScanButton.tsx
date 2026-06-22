@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { StyleSheet, Text, Pressable, Animated } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { ScanStatus } from "../constants";
+import { ScanStatus, getScanStatusText } from "../constants";
 
 interface ScanButtonProps {
   status: ScanStatus;
@@ -12,7 +12,7 @@ export function ScanButton({ status, onPress }: ScanButtonProps) {
   const rotationAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    if (status === "scanning") {
+    if (status === ScanStatus.SCANNING) {
       const animation = Animated.loop(
         Animated.timing(rotationAnim, {
           toValue: 1,
@@ -35,31 +35,20 @@ export function ScanButton({ status, onPress }: ScanButtonProps) {
 
   const getIconName = () => {
     switch (status) {
-      case "scanning":
+      case ScanStatus.SCANNING:
         return "sync";
-      case "error":
+      case ScanStatus.ERROR:
         return "alert-circle";
       default:
         return "bluetooth";
     }
   };
 
-  const getLabel = () => {
-    switch (status) {
-      case "scanning":
-        return "扫描中...";
-      case "error":
-        return "扫描出错";
-      default:
-        return "开始扫描";
-    }
-  };
-
   const getBackgroundColor = () => {
     switch (status) {
-      case "scanning":
+      case ScanStatus.SCANNING:
         return "rgba(79,195,247,0.3)";
-      case "error":
+      case ScanStatus.ERROR:
         return "rgba(244,67,54,0.2)";
       default:
         return "rgba(79,195,247,0.15)";
@@ -70,22 +59,22 @@ export function ScanButton({ status, onPress }: ScanButtonProps) {
     <Pressable
       style={[styles.button, { backgroundColor: getBackgroundColor() }]}
       onPress={onPress}
-      disabled={status === "scanning"}
+      disabled={status === ScanStatus.SCANNING}
     >
       <Animated.View style={{ transform: [{ rotate: rotation }] }}>
         <Ionicons
           name={getIconName()}
           size={24}
-          color={status === "error" ? "#F44336" : "#4FC3F7"}
+          color={status === ScanStatus.ERROR ? "#F44336" : "#4FC3F7"}
         />
       </Animated.View>
       <Text
         style={[
           styles.label,
-          { color: status === "error" ? "#F44336" : "#4FC3F7" },
+          { color: status === ScanStatus.ERROR ? "#F44336" : "#4FC3F7" },
         ]}
       >
-        {getLabel()}
+        {getScanStatusText(status)}
       </Text>
     </Pressable>
   );

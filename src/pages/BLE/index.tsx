@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, Pressable, FlatList, Linking } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -7,12 +7,19 @@ import { useBLE } from "./hooks/useBLE";
 import { BLEDeviceCard } from "./components/BLEDeviceCard";
 import { ScanButton } from "./components/ScanButton";
 import { DeviceDetail } from "./DeviceDetail";
+import {
+  BluetoothState,
+  ScanStatus,
+  ConnectionStatus,
+  getBluetoothStateText,
+} from "./constants";
 
 export function BLEDeviceSearch() {
   const router = useRouter();
   const {
     bluetoothState,
     scanStatus,
+    connectionStatus,
     devices,
     connectedDevice,
     error,
@@ -23,17 +30,31 @@ export function BLEDeviceSearch() {
     clearError,
   } = useBLE();
 
+  // 控制是否显示详情页
+  const [showDetail, setShowDetail] = useState(false);
+
+  // 当连接成功时，自动显示详情页
+  useEffect(() => {
+    if (connectedDevice) {
+      setShowDetail(true);
+    } else {
+      setShowDetail(false);
+    }
+  }, [connectedDevice]);
+
   const handleDevicePress = (device: Device) => {
     if (connectedDevice?.id === device.id) {
-      // 已连接，跳转到设备控制页
-      router.push("/device-control");
+      // 已连接，显示详情页
+      setShowDetail(true);
     }
   };
 
   const handleConnect = async (device: Device) => {
     if (connectedDevice?.id === device.id) {
-      await disconnectFromDevice();
+      // 已连接，显示详情页
+      setShowDetail(true);
     } else {
+      // 连接设备
       await connectToDevice(device);
     }
   };
@@ -46,42 +67,37 @@ export function BLEDeviceSearch() {
     }
   };
 
-  // 如果已连接设备，显示设备详情
-  if (connectedDevice) {
+  // 如果已连接设备且需要显示详情
+  if (connectedDevice && showDetail) {
     return (
       <DeviceDetail
         device={connectedDevice}
-        onDisconnect={disconnectFromDevice}
+        onDisconnect={() => {
+          disconnectFromDevice();
+          setShowDetail(false);
+        }}
+        onBack={() => {
+          // 返回列表，保持连接
+          setShowDetail(false);
+        }}
       />
     );
   }
 
   const renderBluetoothState = () => {
-    // 调试：显示当前状态
-    console.log("当前蓝牙状态:", bluetoothState);
-
-    if (bluetoothState === "PoweredOn") return null;
-
-    const stateMessages: Record<string, string> = {
-      PoweredOff: "蓝牙已关闭，请在系统设置中开启蓝牙",
-      Unauthorized: "App 未获得蓝牙权限，请授权",
-      Unsupported: "设备不支持蓝牙",
-      Unknown: "蓝牙状态未知，正在检测...",
-      Resetting: "蓝牙正在重置...",
-      TurningOn: "蓝牙正在开启...",
-      TurningOff: "蓝牙正在关闭...",
-    };
+    if (bluetoothState === BluetoothState.POWERED_ON) return null;
 
     return (
       <View style={styles.stateBanner}>
         <Ionicons name="warning" size={20} color="#FF9800" />
         <View style={styles.stateContent}>
           <Text style={styles.stateText}>
-            {stateMessages[bluetoothState] || "蓝牙不可用"}
+            {getBluetoothStateText(bluetoothState)}
           </Text>
           <Text style={styles.stateDebug}>状态码: {bluetoothState}</Text>
         </View>
-        {(bluetoothState === "Unauthorized" || bluetoothState === "PoweredOff") && (
+        {(bluetoothState === BluetoothState.UNAUTHORIZED ||
+          bluetoothState === BluetoothState.POWERED_OFF) && (
           <Pressable
             style={styles.settingsBtn}
             onPress={() => Linking.openSettings()}
@@ -131,10 +147,12 @@ export function BLEDeviceSearch() {
 
   const renderDevice = ({ item }: { item: Device }) => {
     const isConnected = connectedDevice ? (connectedDevice as unknown as Device).id === item.id : false;
+    const isConnecting = connectionStatus === ConnectionStatus.CONNECTING && isConnected;
     return (
       <BLEDeviceCard
         device={item}
         isConnected={isConnected}
+        connectionStatus={isConnecting ? ConnectionStatus.CONNECTING : ConnectionStatus.IDLE}
         onPress={handleDevicePress}
         onConnect={handleConnect}
       />

@@ -7,6 +7,6 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "@abandonware/bleno": "^0.6.4"
+    "@abandonware/bleno": "^0.6.2"
   }
 }
