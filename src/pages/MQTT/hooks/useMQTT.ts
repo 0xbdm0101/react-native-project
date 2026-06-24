@@ -46,9 +46,9 @@ export function useMQTT() {
       setConnectionStatus(ConnectionStatus.CONNECTING);
       setBroker(brokerConfig);
 
-      // 构建连接 URL
+      // 构建连接 URL（需要添加 /mqtt 路径）
       const protocol = brokerConfig.ssl ? "wss" : brokerConfig.protocol;
-      const url = `${protocol}://${brokerConfig.host}:${brokerConfig.port}`;
+      const url = `${protocol}://${brokerConfig.host}:${brokerConfig.port}/mqtt`;
 
       // 构建连接选项
       const options: IClientOptions = {
@@ -128,9 +128,18 @@ export function useMQTT() {
 
       // 监听重连事件
       client.on("reconnect", () => {
-        console.log("MQTT 正在重连...");
-        setConnectionStatus(ConnectionStatus.RECONNECTING);
         reconnectAttemptsRef.current++;
+        console.log(`MQTT 正在重连... (${reconnectAttemptsRef.current}/${RECONNECT_CONFIG.maxAttempts})`);
+        setConnectionStatus(ConnectionStatus.RECONNECTING);
+
+        // 检查是否达到最大重连次数
+        if (reconnectAttemptsRef.current >= RECONNECT_CONFIG.maxAttempts) {
+          console.log("❌ 达到最大重连次数，停止重连");
+          client.end(true);
+          clientRef.current = null;
+          setConnectionStatus(ConnectionStatus.ERROR);
+          setError("连接失败：达到最大重连次数");
+        }
       });
 
       // 监听离线事件

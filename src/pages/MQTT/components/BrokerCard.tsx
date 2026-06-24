@@ -1,5 +1,5 @@
-import React from "react";
-import { StyleSheet, Text, View, Pressable } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { StyleSheet, Text, View, Pressable, Animated } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { MQTTBroker, ConnectionStatus, getConnectionStatusText } from "../constants";
 
@@ -20,6 +20,32 @@ export function BrokerCard({
 }: BrokerCardProps) {
   const isConnected = connectionStatus === ConnectionStatus.CONNECTED;
   const isConnecting = connectionStatus === ConnectionStatus.CONNECTING;
+  const isReconnecting = connectionStatus === ConnectionStatus.RECONNECTING;
+  const isError = connectionStatus === ConnectionStatus.ERROR;
+
+  // 旋转动画
+  const rotationAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (isConnecting || isReconnecting) {
+      const animation = Animated.loop(
+        Animated.timing(rotationAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        })
+      );
+      animation.start();
+      return () => animation.stop();
+    } else {
+      rotationAnim.setValue(0);
+    }
+  }, [isConnecting, isReconnecting, rotationAnim]);
+
+  const rotation = rotationAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
 
   const getStatusColor = () => {
     switch (connectionStatus) {
@@ -35,15 +61,24 @@ export function BrokerCard({
     }
   };
 
+  const getStatusIcon = () => {
+    if (isConnected) return "checkmark-circle";
+    if (isConnecting || isReconnecting) return "sync";
+    if (isError) return "alert-circle";
+    return "cloud";
+  };
+
   return (
     <View style={styles.card}>
       <View style={styles.header}>
         <View style={styles.iconWrap}>
-          <Ionicons
-            name="cloud"
-            size={28}
-            color={isConnected ? "#4CAF50" : "#4FC3F7"}
-          />
+          <Animated.View style={{ transform: [{ rotate: rotation }] }}>
+            <Ionicons
+              name={getStatusIcon()}
+              size={28}
+              color={getStatusColor()}
+            />
+          </Animated.View>
         </View>
         <View style={styles.info}>
           <Text style={styles.name}>{broker.name}</Text>
@@ -88,12 +123,12 @@ export function BrokerCard({
           </Pressable>
         ) : (
           <Pressable
-            style={[styles.connectBtn, isConnecting && styles.connectingBtn]}
+            style={[styles.connectBtn, (isConnecting || isReconnecting) && styles.connectingBtn]}
             onPress={onConnect}
-            disabled={isConnecting}
+            disabled={isConnecting || isReconnecting}
           >
             <Ionicons
-              name={isConnecting ? "sync" : "play"}
+              name={isConnecting || isReconnecting ? "sync" : "play"}
               size={18}
               color="#fff"
             />

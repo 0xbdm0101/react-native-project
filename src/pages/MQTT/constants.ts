@@ -29,7 +29,7 @@ export enum Protocol {
 
 /** 消息方向 */
 export enum Direction {
-  INBOUND = "inbound",   // 接收的消息
+  INBOUND = "inbound", // 接收的消息
   OUTBOUND = "outbound", // 发送的消息
 }
 
@@ -85,14 +85,14 @@ export const DEFAULT_BROKER: MQTTBroker = {
   id: "",
   name: "我的 Broker",
   host: "broker.emqx.io",
-  port: 1883,
-  protocol: Protocol.TCP,
+  port: 8084, // WSS 端口
+  protocol: Protocol.WSS, // 使用 WSS (WebSocket SSL)
   username: null,
   password: null,
   clientId: `mqtt_${Date.now()}`,
   keepAlive: 60,
   cleanSession: true,
-  ssl: false,
+  ssl: true, // 启用 SSL
 };
 
 /** 消息存储限制 */
@@ -103,7 +103,7 @@ export const RECONNECT_CONFIG = {
   /** 重连间隔（毫秒） */
   interval: 5000,
   /** 最大重连次数 */
-  maxAttempts: 10,
+  maxAttempts: 5,
 } as const;
 
 // ==================== 工具函数 ====================
