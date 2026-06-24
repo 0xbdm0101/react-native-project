@@ -7,6 +7,7 @@ import { MenuGrid } from "./components/MenuGrid";
 const ROUTE_MAP: Record<string, string> = {
   iot: "/device-list",
   bluetooth: "/ble-search",
+  mqtt: "/mqtt",
 };
 
 export function Home() {

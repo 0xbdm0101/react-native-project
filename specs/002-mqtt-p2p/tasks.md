@@ -20,9 +20,9 @@
 
 **目的**: 项目初始化和基础结构
 
-- [ ] T001 安装 mqtt.js 依赖到 package.json
-- [ ] T002 [P] 创建 MQTT 目录结构 src/pages/MQTT/
-- [ ] T003 [P] 创建 constants.ts 枚举和配置文件 src/pages/MQTT/constants.ts
+- [x] T001 安装 mqtt.js 依赖到 package.json
+- [x] T002 [P] 创建 MQTT 目录结构 src/pages/MQTT/
+- [x] T003 [P] 创建 constants.ts 枚举和配置文件 src/pages/MQTT/constants.ts
 
 ---
 
@@ -32,16 +32,16 @@
 
 **⚠️ 关键**: 用户故事实现必须等待此阶段完成
 
-- [ ] T004 创建 ConnectionStatus 枚举 src/pages/MQTT/constants.ts
-- [ ] T005 [P] 创建 QoS 枚举 src/pages/MQTT/constants.ts
-- [ ] T006 [P] 创建 Protocol 枚举 src/pages/MQTT/constants.ts
-- [ ] T007 [P] 创建 Direction 枚举 src/pages/MQTT/constants.ts
-- [ ] T008 [P] 创建 MQTTBroker 类型定义 src/pages/MQTT/constants.ts
-- [ ] T009 [P] 创建 MQTTTopic 类型定义 src/pages/MQTT/constants.ts
-- [ ] T010 [P] 创建 MQTTMessage 类型定义 src/pages/MQTT/constants.ts
-- [ ] T011 创建 useMQTT Hook 骨架 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T012 实现连接状态管理 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T013 实现错误处理机制 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T004 创建 ConnectionStatus 枚举 src/pages/MQTT/constants.ts
+- [x] T005 [P] 创建 QoS 枚举 src/pages/MQTT/constants.ts
+- [x] T006 [P] 创建 Protocol 枚举 src/pages/MQTT/constants.ts
+- [x] T007 [P] 创建 Direction 枚举 src/pages/MQTT/constants.ts
+- [x] T008 [P] 创建 MQTTBroker 类型定义 src/pages/MQTT/constants.ts
+- [x] T009 [P] 创建 MQTTTopic 类型定义 src/pages/MQTT/constants.ts
+- [x] T010 [P] 创建 MQTTMessage 类型定义 src/pages/MQTT/constants.ts
+- [x] T011 创建 useMQTT Hook 骨架 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T012 实现连接状态管理 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T013 实现错误处理机制 src/pages/MQTT/hooks/useMQTT.ts
 
 **检查点**: 基础设施就绪 - 可以开始用户故事实现
 
@@ -55,15 +55,15 @@
 
 ### 用户故事 1 实现
 
-- [ ] T014 [P] [US1] 创建 BrokerCard 组件 src/pages/MQTT/components/BrokerCard.tsx
-- [ ] T015 [US1] 实现 MQTT 连接逻辑 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T016 [US1] 实现连接参数配置 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T017 [US1] 实现连接状态监听 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T018 [US1] 创建 MQTT 主页面 src/pages/MQTT/index.tsx
-- [ ] T019 [US1] 添加 Broker 配置表单 src/pages/MQTT/index.tsx
-- [ ] T020 [US1] 实现连接状态显示 src/pages/MQTT/index.tsx
-- [ ] T021 [US1] 实现连接错误处理 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T022 [US1] 实现断开连接功能 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T014 [P] [US1] 创建 BrokerCard 组件 src/pages/MQTT/components/BrokerCard.tsx
+- [x] T015 [US1] 实现 MQTT 连接逻辑 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T016 [US1] 实现连接参数配置 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T017 [US1] 实现连接状态监听 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T018 [US1] 创建 MQTT 主页面 src/pages/MQTT/index.tsx
+- [x] T019 [US1] 添加 Broker 配置表单 src/pages/MQTT/index.tsx
+- [x] T020 [US1] 实现连接状态显示 src/pages/MQTT/index.tsx
+- [x] T021 [US1] 实现连接错误处理 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T022 [US1] 实现断开连接功能 src/pages/MQTT/hooks/useMQTT.ts
 
 **检查点**: 用户故事 1 完成 - Broker 连接功能正常
 
@@ -77,14 +77,14 @@
 
 ### 用户故事 2 实现
 
-- [ ] T023 [P] [US2] 创建 TopicCard 组件 src/pages/MQTT/components/TopicCard.tsx
-- [ ] T024 [US2] 实现主题订阅逻辑 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T025 [US2] 实现取消订阅逻辑 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T026 [US2] 实现订阅状态管理 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T027 [US2] 创建主题列表页面 src/pages/MQTT/TopicList.tsx
-- [ ] T028 [US2] 添加主题订阅表单 src/pages/MQTT/TopicList.tsx
-- [ ] T029 [US2] 实现主题列表显示 src/pages/MQTT/TopicList.tsx
-- [ ] T030 [US2] 实现订阅错误处理 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T023 [P] [US2] 创建 TopicCard 组件 src/pages/MQTT/components/TopicCard.tsx
+- [x] T024 [US2] 实现主题订阅逻辑 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T025 [US2] 实现取消订阅逻辑 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T026 [US2] 实现订阅状态管理 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T027 [US2] 创建主题列表页面 src/pages/MQTT/TopicList.tsx
+- [x] T028 [US2] 添加主题订阅表单 src/pages/MQTT/TopicList.tsx
+- [x] T029 [US2] 实现主题列表显示 src/pages/MQTT/TopicList.tsx
+- [x] T030 [US2] 实现订阅错误处理 src/pages/MQTT/hooks/useMQTT.ts
 
 **检查点**: 用户故事 2 完成 - 主题订阅功能正常
 
@@ -98,14 +98,14 @@
 
 ### 用户故事 3 实现
 
-- [ ] T031 [P] [US3] 创建 MessageCard 组件 src/pages/MQTT/components/MessageCard.tsx
-- [ ] T032 [US3] 实现消息接收逻辑 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T033 [US3] 实现消息解析功能 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T034 [US3] 实现消息存储管理 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T035 [US3] 创建消息列表页面 src/pages/MQTT/MessageList.tsx
-- [ ] T036 [US3] 实现消息列表显示 src/pages/MQTT/MessageList.tsx
-- [ ] T037 [US3] 实现消息时间戳显示 src/pages/MQTT/MessageList.tsx
-- [ ] T038 [US3] 实现消息筛选功能 src/pages/MQTT/MessageList.tsx
+- [x] T031 [P] [US3] 创建 MessageCard 组件 src/pages/MQTT/components/MessageCard.tsx
+- [x] T032 [US3] 实现消息接收逻辑 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T033 [US3] 实现消息解析功能 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T034 [US3] 实现消息存储管理 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T035 [US3] 创建消息列表页面 src/pages/MQTT/MessageList.tsx
+- [x] T036 [US3] 实现消息列表显示 src/pages/MQTT/MessageList.tsx
+- [x] T037 [US3] 实现消息时间戳显示 src/pages/MQTT/MessageList.tsx
+- [x] T038 [US3] 实现消息筛选功能 src/pages/MQTT/MessageList.tsx
 
 **检查点**: 用户故事 3 完成 - 消息接收功能正常
 
@@ -119,13 +119,13 @@
 
 ### 用户故事 4 实现
 
-- [ ] T039 [US4] 实现消息发送逻辑 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T040 [US4] 实现 QoS 等级选择 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T041 [US4] 实现 Retain 标志设置 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T042 [US4] 添加发送消息表单 src/pages/MQTT/index.tsx
-- [ ] T043 [US4] 实现发送状态显示 src/pages/MQTT/index.tsx
-- [ ] T044 [US4] 实现发送错误处理 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T045 [US4] 实现消息历史记录 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T039 [US4] 实现消息发送逻辑 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T040 [US4] 实现 QoS 等级选择 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T041 [US4] 实现 Retain 标志设置 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T042 [US4] 添加发送消息表单 src/pages/MQTT/index.tsx
+- [x] T043 [US4] 实现发送状态显示 src/pages/MQTT/index.tsx
+- [x] T044 [US4] 实现发送错误处理 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T045 [US4] 实现消息历史记录 src/pages/MQTT/hooks/useMQTT.ts
 
 **检查点**: 用户故事 4 完成 - 消息发送功能正常
 
@@ -139,13 +139,13 @@
 
 ### 用户故事 5 实现
 
-- [ ] T046 [US5] 实现配置保存逻辑 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T047 [US5] 实现配置加载逻辑 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T048 [US5] 实现配置删除逻辑 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T049 [US5] 实现配置切换功能 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T050 [US5] 添加配置管理界面 src/pages/MQTT/index.tsx
-- [ ] T051 [US5] 实现自动连接功能 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T052 [US5] 实现配置导入导出 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T046 [US5] 实现配置保存逻辑 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T047 [US5] 实现配置加载逻辑 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T048 [US5] 实现配置删除逻辑 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T049 [US5] 实现配置切换功能 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T050 [US5] 添加配置管理界面 src/pages/MQTT/index.tsx
+- [x] T051 [US5] 实现自动连接功能 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T052 [US5] 实现配置导入导出 src/pages/MQTT/hooks/useMQTT.ts
 
 **检查点**: 用户故事 5 完成 - 配置管理功能正常
 
@@ -155,12 +155,12 @@
 
 **目的**: 影响多个用户故事的改进
 
-- [ ] T053 [P] 实现自动重连机制 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T054 [P] 实现网络状态监听 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T055 实现消息去重功能 src/pages/MQTT/hooks/useMQTT.ts
-- [ ] T056 实现消息排序功能 src/pages/MQTT/MessageList.tsx
-- [ ] T057 实现消息清理功能 src/pages/MQTT/MessageList.tsx
-- [ ] T058 添加全面的错误提示信息 src/pages/MQTT/constants.ts
+- [x] T053 [P] 实现自动重连机制 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T054 [P] 实现网络状态监听 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T055 实现消息去重功能 src/pages/MQTT/hooks/useMQTT.ts
+- [x] T056 实现消息排序功能 src/pages/MQTT/MessageList.tsx
+- [x] T057 实现消息清理功能 src/pages/MQTT/MessageList.tsx
+- [x] T058 添加全面的错误提示信息 src/pages/MQTT/constants.ts
 - [ ] T059 运行 quickstart.md 验证场景
 - [ ] T060 更新文档 specs/002-mqtt-p2p/
 
