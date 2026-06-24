@@ -42,7 +42,21 @@ export function DeviceDetail({ device, onDisconnect, onBack }: DeviceDetailProps
   // 发现服务和特征值
   useEffect(() => {
     discoverServices();
-    startRSSIUpdates();
+
+    // 立即读取一次 RSSI
+    readCurrentRSSI();
+
+    // 保持连接活跃（每 10 秒读取一次 RSSI）
+    const keepAliveInterval = setInterval(async () => {
+      try {
+        const updatedDevice = await device.readRSSI();
+        if (updatedDevice.rssi !== null) {
+          setCurrentRSSI(updatedDevice.rssi);
+        }
+      } catch (err) {
+        console.log("保持连接失败:", err);
+      }
+    }, 10000);
 
     // 监听设备断开事件（比如盖上盖子）
     const subscription = device.onDisconnected((error, disconnectedDevice) => {
@@ -55,25 +69,36 @@ export function DeviceDetail({ device, onDisconnect, onBack }: DeviceDetailProps
 
     return () => {
       subscription.remove();
+      clearInterval(keepAliveInterval);
     };
   }, []);
 
-  // 定期更新 RSSI
-  const startRSSIUpdates = () => {
-    const interval = setInterval(async () => {
+  // 立即读取 RSSI
+  const readCurrentRSSI = async () => {
+    try {
+      console.log("开始读取 RSSI...");
+      console.log("设备初始 RSSI:", device.rssi);
+
+      // 1. 先使用扫描时的 RSSI（这个一定有）
+      if (device.rssi !== null && device.rssi !== undefined) {
+        setCurrentRSSI(device.rssi);
+        console.log("✅ 使用扫描时的 RSSI:", device.rssi);
+      }
+
+      // 2. 尝试读取最新 RSSI（可能失败）
       try {
         const updatedDevice = await device.readRSSI();
         if (updatedDevice.rssi !== null) {
           setCurrentRSSI(updatedDevice.rssi);
+          console.log("✅ RSSI 更新成功:", updatedDevice.rssi);
         }
-      } catch (err) {
-        // 忽略 RSSI 读取失败
-        console.log("读取 RSSI 失败:", err);
+      } catch (readErr) {
+        console.log("⚠️ readRSSI 不支持，保持使用扫描值");
+        // 不支持就不更新，保持扫描时的值
       }
-    }, 10000); // 每 10 秒更新一次
-
-    // 清理定时器
-    return () => clearInterval(interval);
+    } catch (err) {
+      console.log("❌ RSSI 处理失败:", err);
+    }
   };
 
   const discoverServices = async () => {
@@ -115,35 +140,37 @@ export function DeviceDetail({ device, onDisconnect, onBack }: DeviceDetailProps
   // 读取传感器数据
   const readSensorData = async (charsMap: Map<string, Characteristic[]>) => {
     try {
+      // 只读取我们关心的特征值，不读取所有可读特征值
+      const targetUUIDs = ['2A6E', '2A6F', '2A19']; // 温度、湿度、电池
+
       for (const [serviceUuid, chars] of charsMap) {
         for (const char of chars) {
-          if (char.uuid === '2A6E') {
-            // 读取温度
-            const tempChar = await char.read();
-            const tempValue = parseTemperature(tempChar.value);
-            setSensorData(prev => ({ ...prev, temperature: tempValue }));
-            console.log('🌡️ 温度:', tempValue);
-          } else if (char.uuid === '2A6F') {
-            // 读取湿度
-            const humChar = await char.read();
-            const humValue = parseHumidity(humChar.value);
-            setSensorData(prev => ({ ...prev, humidity: humValue }));
-            console.log('💧 湿度:', humValue);
-          } else if (char.uuid === '2A19') {
-            // 读取电池电量
-            const batteryChar = await char.read();
-            const batteryValue = parseBattery(batteryChar.value);
-            setSensorData(prev => ({ ...prev, battery: batteryValue }));
-            console.log('🔋 电池:', batteryValue);
-          } else if (char.isReadable) {
-            // 尝试读取其他可读特征值
+          if (targetUUIDs.includes(char.uuid)) {
             try {
               const value = await char.read();
-              console.log(`📖 读取 ${getUUIDName(char.uuid)}:`, value.value);
-            } catch (e) {
-              // 忽略读取失败的特征值
+
+              if (char.uuid === '2A6E') {
+                // 读取温度
+                const tempValue = parseTemperature(value.value);
+                setSensorData(prev => ({ ...prev, temperature: tempValue }));
+                console.log('🌡️ 温度:', tempValue);
+              } else if (char.uuid === '2A6F') {
+                // 读取湿度
+                const humValue = parseHumidity(value.value);
+                setSensorData(prev => ({ ...prev, humidity: humValue }));
+                console.log('💧 湿度:', humValue);
+              } else if (char.uuid === '2A19') {
+                // 读取电池电量
+                const batteryValue = parseBattery(value.value);
+                setSensorData(prev => ({ ...prev, battery: batteryValue }));
+                console.log('🔋 电池:', batteryValue);
+              }
+            } catch (readErr) {
+              console.log(`⚠️ 读取 ${getUUIDName(char.uuid)} 失败:`, readErr);
+              // 单个读取失败不影响其他读取
             }
           }
+          // 不读取其他特征值，避免导致设备断开
         }
       }
     } catch (err: any) {
@@ -278,6 +305,53 @@ export function DeviceDetail({ device, onDisconnect, onBack }: DeviceDetailProps
     );
   };
 
+  // 读取特征值
+  const handleReadCharacteristic = async (char: Characteristic) => {
+    try {
+      const value = await char.read();
+      console.log(`📖 读取 ${getUUIDName(char.uuid)}:`, value.value);
+
+      // 解析数据
+      const parsedValue = parseCharacteristicValue(value.value, char.uuid);
+      console.log(`📊 解析结果:`, parsedValue);
+
+      // 显示提示（这里可以添加 Toast 或 Modal）
+      alert(`${getUUIDName(char.uuid)}: ${parsedValue}`);
+    } catch (err) {
+      console.log(`❌ 读取失败:`, err);
+      alert(`读取失败: ${err}`);
+    }
+  };
+
+  // 解析特征值
+  const parseCharacteristicValue = (base64Value: string | null, uuid: string): string => {
+    if (!base64Value) return '空值';
+
+    try {
+      const buffer = Buffer.from(base64Value, 'base64');
+
+      // 根据 UUID 解析
+      switch (uuid) {
+        case '2A19': // 电池
+          return `${buffer.readUInt8(0)}%`;
+        case '2A6E': // 温度
+          return `${(buffer.readInt16LE(0) / 100).toFixed(1)}°C`;
+        case '2A6F': // 湿度
+          return `${(buffer.readUInt16LE(0) / 100).toFixed(1)}%`;
+        default:
+          // 尝试解析为字符串
+          try {
+            return buffer.toString();
+          } catch {
+            // 返回十六进制
+            return `0x${buffer.toString().toUpperCase()}`;
+          }
+      }
+    } catch (err) {
+      return `解析失败: ${err}`;
+    }
+  };
+
   // 渲染服务列表
   const renderServices = () => {
     if (services.length === 0) {
@@ -309,11 +383,51 @@ export function DeviceDetail({ device, onDisconnect, onBack }: DeviceDetailProps
                 <Text style={styles.charUUID}>{getUUIDName(char.uuid)}</Text>
               </View>
               <Text style={styles.charUUIDFull}>{char.uuid}</Text>
+
+              {/* 属性标签 */}
               <View style={styles.charProperties}>
-                {char.isReadable && <Text style={styles.propertyBadge}>可读</Text>}
-                {char.isWritableWithResponse && <Text style={styles.propertyBadge}>可写</Text>}
-                {char.isNotifiable && <Text style={styles.propertyBadge}>可通知</Text>}
+                {char.isReadable && (
+                  <View style={[styles.propertyBadge, styles.readableBadge]}>
+                    <Ionicons name="eye" size={10} color="#4CAF50" />
+                    <Text style={styles.readableText}>可读</Text>
+                  </View>
+                )}
+                {char.isWritableWithResponse && (
+                  <View style={[styles.propertyBadge, styles.writableBadge]}>
+                    <Ionicons name="create" size={10} color="#FF9800" />
+                    <Text style={styles.writableText}>可写</Text>
+                  </View>
+                )}
+                {char.isWritableWithoutResponse && (
+                  <View style={[styles.propertyBadge, styles.writableBadge]}>
+                    <Ionicons name="create" size={10} color="#FF9800" />
+                    <Text style={styles.writableText}>可写(无响应)</Text>
+                  </View>
+                )}
+                {char.isNotifiable && (
+                  <View style={[styles.propertyBadge, styles.notifiableBadge]}>
+                    <Ionicons name="notifications" size={10} color="#2196F3" />
+                    <Text style={styles.notifiableText}>可通知</Text>
+                  </View>
+                )}
+                {char.isIndicatable && (
+                  <View style={[styles.propertyBadge, styles.notifiableBadge]}>
+                    <Ionicons name="notifications" size={10} color="#2196F3" />
+                    <Text style={styles.notifiableText}>可指示</Text>
+                  </View>
+                )}
               </View>
+
+              {/* 操作按钮 */}
+              {char.isReadable && (
+                <Pressable
+                  style={styles.readBtn}
+                  onPress={() => handleReadCharacteristic(char)}
+                >
+                  <Ionicons name="download" size={14} color="#4FC3F7" />
+                  <Text style={styles.readBtnText}>读取</Text>
+                </Pressable>
+              )}
             </View>
           ))
         )}
@@ -551,12 +665,47 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   propertyBadge: {
-    backgroundColor: 'rgba(79,195,247,0.15)',
-    color: '#4FC3F7',
-    fontSize: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingVertical: 3,
     borderRadius: 4,
+    gap: 3,
+  },
+  readableBadge: {
+    backgroundColor: 'rgba(76,175,80,0.15)',
+  },
+  readableText: {
+    color: '#4CAF50',
+    fontSize: 10,
+  },
+  writableBadge: {
+    backgroundColor: 'rgba(255,152,0,0.15)',
+  },
+  writableText: {
+    color: '#FF9800',
+    fontSize: 10,
+  },
+  notifiableBadge: {
+    backgroundColor: 'rgba(33,150,243,0.15)',
+  },
+  notifiableText: {
+    color: '#2196F3',
+    fontSize: 10,
+  },
+  readBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(79,195,247,0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginTop: 8,
+    gap: 4,
+  },
+  readBtnText: {
+    color: '#4FC3F7',
+    fontSize: 12,
   },
   loadingContainer: {
     alignItems: 'center',

@@ -97,7 +97,12 @@ export function useBLE() {
         setConnectionStatus(ConnectionStatus.CONNECTING);
 
         console.log("正在连接设备:", device.name || device.id);
+        console.log("设备初始 RSSI:", device.rssi);
+
         const connected = await bleManager.connectToDevice(device.id);
+
+        // 保留原始设备的 RSSI
+        connected.rssi = device.rssi;
 
         // 监听设备断开事件
         connected.onDisconnected((error, disconnectedDevice) => {
@@ -113,6 +118,7 @@ export function useBLE() {
         setConnectedDevice(connected);
         setConnectionStatus(ConnectionStatus.CONNECTED);
         console.log("✅ 已连接到设备:", device.name || device.id);
+        console.log("✅ 保留的 RSSI:", connected.rssi);
       } catch (err: any) {
         console.error("❌ 连接失败:", err);
         setError(`连接失败: ${err.message}`);
