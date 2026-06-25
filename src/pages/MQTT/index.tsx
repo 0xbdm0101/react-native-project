@@ -21,6 +21,12 @@ export default function MQTTPage() {
     topics,
     messages,
     error,
+    isLoadingConfig,
+    savedBrokers,
+    saveBrokerToList,
+    removeBrokerFromList,
+    clearAllBrokers,
+    selectSavedBroker,
     connect,
     disconnect,
     subscribe,
@@ -32,6 +38,9 @@ export default function MQTTPage() {
 
   // 表单状态
   const [showBrokerForm, setShowBrokerForm] = useState(false);
+  const [showSavedList, setShowSavedList] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [saveAlias, setSaveAlias] = useState("");
   const [brokerForm, setBrokerForm] = useState<MQTTBroker>(DEFAULT_BROKER);
   const [topicInput, setTopicInput] = useState("");
   const [topicQoS, setTopicQoS] = useState<QoS>(QoS.QOS_0);
@@ -56,6 +65,33 @@ export default function MQTTPage() {
   const handleEditBroker = () => {
     setBrokerForm(broker);
     setShowBrokerForm(true);
+  };
+
+  // 处理保存配置
+  const handleSaveBroker = () => {
+    if (saveAlias.trim()) {
+      saveBrokerToList(broker, saveAlias.trim());
+      setSaveAlias("");
+      setShowSaveDialog(false);
+    }
+  };
+
+  // 处理选择配置
+  const handleSelectBroker = (savedBroker: any) => {
+    selectSavedBroker(savedBroker);
+    setShowSavedList(false);
+    // 如果当前已连接，断开后重新连接
+    if (connectionStatus === "connected") {
+      disconnect();
+    }
+  };
+
+  // 处理删除配置
+  const handleDeleteBroker = (brokerId: string) => {
+    Alert.alert("确认删除", "确定要删除这个 Broker 配置吗？", [
+      { text: "取消", style: "cancel" },
+      { text: "删除", style: "destructive", onPress: () => removeBrokerFromList(brokerId) },
+    ]);
   };
 
   // 处理订阅
@@ -285,6 +321,93 @@ export default function MQTTPage() {
           onDisconnect={handleDisconnect}
           onEdit={handleEditBroker}
         />
+
+        {/* 配置管理按钮 */}
+        <View style={styles.configActions}>
+          <Pressable
+            style={styles.configBtn}
+            onPress={() => setShowSaveDialog(true)}
+          >
+            <Ionicons name="bookmark-outline" size={18} color="#4FC3F7" />
+            <Text style={styles.configBtnText}>保存配置</Text>
+          </Pressable>
+          <Pressable
+            style={styles.configBtn}
+            onPress={() => setShowSavedList(!showSavedList)}
+          >
+            <Ionicons name="list-outline" size={18} color="#4FC3F7" />
+            <Text style={styles.configBtnText}>
+              已保存 ({savedBrokers.length})
+            </Text>
+          </Pressable>
+        </View>
+
+        {/* 保存配置弹窗 */}
+        {showSaveDialog && (
+          <View style={styles.saveDialog}>
+            <Text style={styles.saveDialogTitle}>保存 Broker 配置</Text>
+            <TextInput
+              style={styles.input}
+              value={saveAlias}
+              onChangeText={setSaveAlias}
+              placeholder="输入配置名称（如：我的 Broker）"
+              placeholderTextColor="#666"
+            />
+            <View style={styles.saveDialogActions}>
+              <Pressable
+                style={styles.cancelBtn}
+                onPress={() => {
+                  setShowSaveDialog(false);
+                  setSaveAlias("");
+                }}
+              >
+                <Text style={styles.cancelBtnText}>取消</Text>
+              </Pressable>
+              <Pressable style={styles.saveBtn} onPress={handleSaveBroker}>
+                <Text style={styles.saveBtnText}>保存</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
+
+        {/* 已保存配置列表 */}
+        {showSavedList && savedBrokers.length > 0 && (
+          <View style={styles.savedList}>
+            <View style={styles.savedListHeader}>
+              <Text style={styles.savedListTitle}>已保存的配置</Text>
+              <Pressable onPress={clearAllBrokers}>
+                <Text style={styles.clearAllText}>清空</Text>
+              </Pressable>
+            </View>
+            {savedBrokers.map((savedBroker) => (
+              <View key={savedBroker.id} style={styles.savedItem}>
+                <Pressable
+                  style={styles.savedItemContent}
+                  onPress={() => handleSelectBroker(savedBroker)}
+                >
+                  <View style={styles.savedItemInfo}>
+                    <Text style={styles.savedItemName}>{savedBroker.alias}</Text>
+                    <Text style={styles.savedItemHost}>
+                      {savedBroker.host}:{savedBroker.port}
+                    </Text>
+                    <Text style={styles.savedItemMeta}>
+                      连接 {savedBroker.connectCount} 次
+                      {savedBroker.lastConnected &&
+                        ` · ${new Date(savedBroker.lastConnected).toLocaleDateString()}`}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color="#666" />
+                </Pressable>
+                <Pressable
+                  style={styles.deleteBtn}
+                  onPress={() => handleDeleteBroker(savedBroker.id)}
+                >
+                  <Ionicons name="trash-outline" size={18} color="#F44336" />
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        )}
 
         {/* Broker 表单 */}
         {renderBrokerForm()}
@@ -651,5 +774,102 @@ const styles = StyleSheet.create({
   messageDirection: {
     color: "#888",
     fontSize: 11,
+  },
+  configActions: {
+    flexDirection: "row",
+    marginHorizontal: 16,
+    marginBottom: 16,
+    gap: 12,
+  },
+  configBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(79,195,247,0.1)",
+    paddingVertical: 12,
+    borderRadius: 10,
+    gap: 6,
+  },
+  configBtnText: {
+    color: "#4FC3F7",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  saveDialog: {
+    backgroundColor: "#1c1c1e",
+    borderRadius: 14,
+    padding: 16,
+    marginHorizontal: 16,
+    marginBottom: 16,
+  },
+  saveDialogTitle: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 12,
+  },
+  saveDialogActions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 12,
+    marginTop: 12,
+  },
+  savedList: {
+    backgroundColor: "#1c1c1e",
+    borderRadius: 14,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    overflow: "hidden",
+  },
+  savedListHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#2c2c2e",
+  },
+  savedListTitle: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  clearAllText: {
+    color: "#F44336",
+    fontSize: 14,
+  },
+  savedItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: "#2c2c2e",
+  },
+  savedItemContent: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+  },
+  savedItemInfo: {
+    flex: 1,
+  },
+  savedItemName: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "500",
+  },
+  savedItemHost: {
+    color: "#4FC3F7",
+    fontSize: 13,
+    marginTop: 2,
+  },
+  savedItemMeta: {
+    color: "#888",
+    fontSize: 12,
+    marginTop: 4,
+  },
+  deleteBtn: {
+    padding: 16,
   },
 });

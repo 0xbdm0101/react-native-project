@@ -16,11 +16,25 @@ import {
   validatePublishTopic,
   validateSubscribeTopic,
 } from "../constants";
+import { useMQTTConfig } from "./useMQTTConfig";
 
 export function useMQTT() {
+  // ==================== 配置管理 ====================
+  const {
+    currentBroker,
+    savedBrokers,
+    isLoading: isLoadingConfig,
+    saveCurrentBroker,
+    saveBrokerToList,
+    updateBrokerConnectTime,
+    removeBrokerFromList,
+    clearAllBrokers,
+    selectBroker: selectSavedBroker,
+  } = useMQTTConfig();
+
   // ==================== 状态 ====================
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>(ConnectionStatus.DISCONNECTED);
-  const [broker, setBroker] = useState<MQTTBroker>(DEFAULT_BROKER);
+  const [broker, setBroker] = useState<MQTTBroker>(currentBroker);
   const [topics, setTopics] = useState<MQTTTopic[]>([]);
   const [messages, setMessages] = useState<MQTTMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +93,10 @@ export function useMQTT() {
         console.log("✅ MQTT 连接成功");
         setConnectionStatus(ConnectionStatus.CONNECTED);
         reconnectAttemptsRef.current = 0;
+
+        // 保存配置
+        saveCurrentBroker(brokerConfig);
+        updateBrokerConnectTime(brokerConfig);
       });
 
       // 监听消息事件
@@ -336,6 +354,14 @@ export function useMQTT() {
     topics,
     messages,
     error,
+    isLoadingConfig,
+
+    // 配置管理
+    savedBrokers,
+    saveBrokerToList,
+    removeBrokerFromList,
+    clearAllBrokers,
+    selectSavedBroker,
 
     // 连接管理
     connect,
