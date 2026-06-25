@@ -191,18 +191,51 @@ export function validateBroker(broker: MQTTBroker): string[] {
 }
 
 /**
- * 验证主题格式
+ * 验证发布主题格式（不能包含通配符）
  */
-export function validateTopic(topic: string): string[] {
+export function validatePublishTopic(topic: string): string[] {
   const errors: string[] = [];
 
   if (!topic) {
     errors.push("主题不能为空");
   }
 
-  // MQTT 主题不能包含通配符（订阅时可以）
+  // 发布时主题不能包含通配符
   if (topic.includes("#") || topic.includes("+")) {
-    errors.push("主题不能包含通配符 (# 或 +)");
+    errors.push("发布主题不能包含通配符 (# 或 +)");
+  }
+
+  return errors;
+}
+
+/**
+ * 验证订阅主题格式（可以包含通配符）
+ */
+export function validateSubscribeTopic(topic: string): string[] {
+  const errors: string[] = [];
+
+  if (!topic) {
+    errors.push("主题不能为空");
+  }
+
+  // 订阅时可以使用通配符，但需要符合规则
+  // # 必须在最后，且前面必须是 /
+  if (topic.includes("#")) {
+    const hashIndex = topic.indexOf("#");
+    if (hashIndex !== topic.length - 1) {
+      errors.push("通配符 # 必须在主题末尾");
+    }
+    if (hashIndex > 0 && topic[hashIndex - 1] !== "/") {
+      errors.push("通配符 # 前面必须是 /");
+    }
+  }
+
+  // + 必须占据整个级别
+  const levels = topic.split("/");
+  for (const level of levels) {
+    if (level.includes("+") && level !== "+") {
+      errors.push("通配符 + 必须占据整个级别");
+    }
   }
 
   return errors;

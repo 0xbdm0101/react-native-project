@@ -10,6 +10,7 @@ import {
   QoS,
   DEFAULT_BROKER,
   formatTimestamp,
+  getQoSText,
 } from "./constants";
 
 export default function MQTTPage() {
@@ -33,6 +34,7 @@ export default function MQTTPage() {
   const [showBrokerForm, setShowBrokerForm] = useState(false);
   const [brokerForm, setBrokerForm] = useState<MQTTBroker>(DEFAULT_BROKER);
   const [topicInput, setTopicInput] = useState("");
+  const [topicQoS, setTopicQoS] = useState<QoS>(QoS.QOS_0);
   const [messageInput, setMessageInput] = useState("");
   const [messageTopic, setMessageTopic] = useState("");
 
@@ -59,7 +61,7 @@ export default function MQTTPage() {
   // 处理订阅
   const handleSubscribe = () => {
     if (topicInput.trim()) {
-      subscribe(topicInput.trim());
+      subscribe(topicInput.trim(), topicQoS);
       setTopicInput("");
     }
   };
@@ -296,13 +298,44 @@ export default function MQTTPage() {
                 style={styles.subscribeInput}
                 value={topicInput}
                 onChangeText={setTopicInput}
-                placeholder="输入主题名"
+                placeholder="输入主题名（支持通配符 + #）"
                 placeholderTextColor="#666"
                 autoCapitalize="none"
               />
               <Pressable style={styles.subscribeBtn} onPress={handleSubscribe}>
                 <Ionicons name="add" size={20} color="#fff" />
               </Pressable>
+            </View>
+
+            {/* QoS 选择器 */}
+            <View style={styles.qosSelector}>
+              <Text style={styles.qosLabel}>QoS 等级：</Text>
+              <View style={styles.qosButtons}>
+                {Object.values(QoS)
+                  .filter((v) => typeof v === "number")
+                  .map((qos) => (
+                    <Pressable
+                      key={qos}
+                      style={[
+                        styles.qosBtn,
+                        topicQoS === qos && styles.qosBtnActive,
+                      ]}
+                      onPress={() => setTopicQoS(qos as QoS)}
+                    >
+                      <Text
+                        style={[
+                          styles.qosBtnText,
+                          topicQoS === qos && styles.qosBtnTextActive,
+                        ]}
+                      >
+                        {qos}
+                      </Text>
+                    </Pressable>
+                  ))}
+              </View>
+              <Text style={styles.qosHint}>
+                {getQoSText(topicQoS)}
+              </Text>
             </View>
           </View>
         )}
@@ -546,6 +579,41 @@ const styles = StyleSheet.create({
   clearBtnText: {
     color: "#888",
     fontSize: 13,
+  },
+  qosSelector: {
+    marginTop: 12,
+  },
+  qosLabel: {
+    color: "#888",
+    fontSize: 12,
+    marginBottom: 8,
+  },
+  qosButtons: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 6,
+  },
+  qosBtn: {
+    flex: 1,
+    backgroundColor: "#2c2c2e",
+    borderRadius: 6,
+    paddingVertical: 8,
+    alignItems: "center",
+  },
+  qosBtnActive: {
+    backgroundColor: "rgba(79,195,247,0.2)",
+  },
+  qosBtnText: {
+    color: "#888",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  qosBtnTextActive: {
+    color: "#4FC3F7",
+  },
+  qosHint: {
+    color: "#666",
+    fontSize: 11,
   },
   messageItem: {
     backgroundColor: "#1c1c1e",

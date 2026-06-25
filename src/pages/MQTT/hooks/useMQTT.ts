@@ -13,7 +13,8 @@ import {
   RECONNECT_CONFIG,
   generateId,
   validateBroker,
-  validateTopic,
+  validatePublishTopic,
+  validateSubscribeTopic,
 } from "../constants";
 
 export function useMQTT() {
@@ -175,8 +176,8 @@ export function useMQTT() {
    */
   const subscribe = useCallback(
     (topic: string, qos: QoS = QoS.QOS_0) => {
-      // 验证主题
-      const errors = validateTopic(topic);
+      // 验证订阅主题（允许通配符）
+      const errors = validateSubscribeTopic(topic);
       if (errors.length > 0) {
         setError(errors.join(", "));
         return;
@@ -253,8 +254,8 @@ export function useMQTT() {
    */
   const publish = useCallback(
     (topic: string, payload: string, qos: QoS = QoS.QOS_0, retain: boolean = false) => {
-      // 验证主题
-      const errors = validateTopic(topic);
+      // 验证发布主题（不能包含通配符）
+      const errors = validatePublishTopic(topic);
       if (errors.length > 0) {
         setError(errors.join(", "));
         return;
