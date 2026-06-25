@@ -495,6 +495,23 @@ export default function MQTTPage() {
 
         {/* 消息列表 */}
         {renderMessages()}
+
+        {/* 跳转到设备操作页面 */}
+        <View style={styles.section}>
+          <Pressable
+            style={styles.operationBtn}
+            onPress={() => router.push("/mqtt-operations")}
+          >
+            <Ionicons name="hardware-chip-outline" size={24} color="#4CAF50" />
+            <View style={styles.operationBtnContent}>
+              <Text style={styles.operationBtnTitle}>设备控制</Text>
+              <Text style={styles.operationBtnSubtitle}>
+                点击进入设备操作页面
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#666" />
+          </Pressable>
+        </View>
       </ScrollView>
     </View>
   );
@@ -871,5 +888,28 @@ const styles = StyleSheet.create({
   },
   deleteBtn: {
     padding: 16,
+  },
+  operationBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(76,175,80,0.15)",
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "rgba(76,175,80,0.3)",
+  },
+  operationBtnContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  operationBtnTitle: {
+    color: "#4CAF50",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  operationBtnSubtitle: {
+    color: "#888",
+    fontSize: 13,
+    marginTop: 2,
   },
 });
