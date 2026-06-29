@@ -154,7 +154,7 @@ export default function MQTTOperationsPage() {
         <View style={styles.deviceIcon}>
           <Ionicons
             name={device.icon as any}
-            size={32}
+            size={24}
             color={isOn ? "#4CAF50" : "#666"}
           />
         </View>
@@ -209,17 +209,23 @@ export default function MQTTOperationsPage() {
           {connectionStatus === "connected" ? "已连接" : "未连接"}
         </Text>
         {connectionStatus !== "connected" && (
-          <Pressable
-            style={styles.connectBtn}
-            onPress={() => connect(broker)}
-          >
+          <Pressable style={styles.connectBtn} onPress={() => connect(broker)}>
             <Text style={styles.connectBtnText}>连接</Text>
           </Pressable>
         )}
       </View>
 
       {/* 设备列表 */}
-      <ScrollView style={styles.content}>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        bounces={true}
+        onScroll={() => {
+          console.log("scroll");
+        }}
+        scrollEventThrottle={16}
+      >
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>设备列表</Text>
           <Text style={styles.sectionSubtitle}>
@@ -243,7 +249,9 @@ export default function MQTTOperationsPage() {
                 <View key={id} style={styles.logItem}>
                   <View style={styles.logHeader}>
                     <Text style={styles.logDeviceName}>{device.name}</Text>
-                    <Text style={[styles.logStatus, isOn && styles.logStatusOn]}>
+                    <Text
+                      style={[styles.logStatus, isOn && styles.logStatusOn]}
+                    >
                       {isOn ? "开启" : "关闭"}
                     </Text>
                   </View>
@@ -335,6 +343,9 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
+  scrollContent: {
+    paddingBottom: 40,
+  },
   section: {
     marginHorizontal: 16,
     marginBottom: 16,
@@ -358,8 +369,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#1c1c1e",
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    padding: 12,
+    marginBottom: 8,
   },
   deviceItemOn: {
     backgroundColor: "rgba(76,175,80,0.1)",
@@ -367,20 +378,20 @@ const styles = StyleSheet.create({
     borderColor: "rgba(76,175,80,0.3)",
   },
   deviceIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: "#2c2c2e",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 12,
+    marginRight: 10,
   },
   deviceInfo: {
     flex: 1,
   },
   deviceName: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "600",
     marginBottom: 2,
   },
@@ -389,12 +400,12 @@ const styles = StyleSheet.create({
   },
   deviceTopic: {
     color: "#4FC3F7",
-    fontSize: 12,
-    marginBottom: 4,
+    fontSize: 11,
+    marginBottom: 2,
   },
   deviceDescription: {
     color: "#888",
-    fontSize: 13,
+    fontSize: 12,
   },
   deviceSwitch: {
     marginLeft: 12,
