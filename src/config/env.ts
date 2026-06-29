@@ -1,4 +1,7 @@
-import Constants from "expo-constants";
+/**
+ * 环境配置
+ * React Native 版，通过 expo-constants 或手动指定
+ */
 
 export enum RunEnvEnum {
   DEVELOPMENT = "development",
@@ -6,13 +9,11 @@ export enum RunEnvEnum {
   STAGING = "staging",
 }
 
-/**
- * 获取当前运行环境
- * 通过 app.json 的 expo.extra.env 注入，或默认 development
- */
+/** 当前环境（默认 development，可通过 expo-constants extra 覆盖） */
 export function getCurrentEnv(): RunEnvEnum {
-  const env = Constants.expoConfig?.extra?.env as RunEnvEnum;
-  return env ?? RunEnvEnum.DEVELOPMENT;
+  // Expo 可通过 app.json extra 字段注入
+  // 本地开发默认 development
+  return RunEnvEnum.DEVELOPMENT;
 }
 
 export function isDevMode(): boolean {

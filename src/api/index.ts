@@ -1,70 +1,156 @@
 /**
  * API 主入口 — axios 实例 + 拦截器
- * 参考 orswap 模式：集中管理 HTTP 配置，业务层通过 services 调用
+ *
+ * 参考 create-react-dex-app 模式：
+ *   - 每个 swagger group 生成一个 Api 类（src/api/gen/api.{group}.ts）
+ *   - 静态 import → 创建实例 → applyInterceptors → 导出
+ *   - 业务代码通过点表示法调用，有完整 TS 类型提示
+ *
+ * 使用方式:
+ *   import { api } from "@/api";
+ *   const result = await api.someEndpoint(params);
+ *
+ * 多 group 时:
+ *   import { Api as xwalletApi } from "./gen/api.xwallet";
+ *   registerApi("xwallet", xwalletApi);
+ *   // 然后也可以通过 api.xxx() 调用
+ *
+ * 生成 API:
+ *   npm run gen:api -- --env development
  */
 
-import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
+import axios, {
+  AxiosError,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+  AxiosInstance,
+} from "axios";
 import { TIMEOUT, DEFAULT_CONFIG } from "./config";
 import { formatRequestLog, formatResponseLog, getErrorMessage } from "./utils";
+import { API_URLS } from "@/config/network";
+import { getCurrentEnv } from "@/config/env";
 
-// 导出类型供 services 使用
+// 静态导入生成的 API 类（gen:api 后生成）
+import { Api as DefaultApi } from "./gen/api.default";
+
 export type { AxiosResponse, AxiosError, InternalAxiosRequestConfig };
 
-// ==================== Axios 实例 ====================
+// ==================== 拦截器 ====================
 
-const httpClient = axios.create({
-  timeout: TIMEOUT.DEFAULT,
-  headers: {
-    "Content-Type": DEFAULT_CONFIG.CONTENT_TYPE,
-    Accept: DEFAULT_CONFIG.ACCEPT,
-  },
-});
+function applyInterceptors(instance: AxiosInstance) {
+  instance.interceptors.request.use(
+    (config: InternalAxiosRequestConfig) => {
+      if (!config.baseURL) {
+        const env = getCurrentEnv();
+        config.baseURL = API_URLS[env];
+      }
 
-// ==================== 请求拦截器 ====================
+      const method = config.method?.toUpperCase() || "GET";
+      const body =
+        typeof config.data === "string"
+          ? config.data
+          : config.data
+            ? JSON.stringify(config.data)
+            : undefined;
+      console.log(
+        formatRequestLog(
+          method,
+          config.url || "",
+          config.headers as Record<string, string>,
+          body,
+        ),
+      );
 
-httpClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const method = config.method?.toUpperCase() || "GET";
-    const body =
-      typeof config.data === "string"
-        ? config.data
-        : config.data
-          ? JSON.stringify(config.data)
-          : undefined;
-    console.log(formatRequestLog(method, config.url || "", config.headers as Record<string, string>, body));
-    // 记录开始时间，响应拦截器用
-    (config as any)._startTime = Date.now();
-    return config;
-  },
-  (error: AxiosError) => {
-    console.error("❌ 请求错误:", error.message);
-    return Promise.reject(error);
-  }
-);
-
-// ==================== 响应拦截器 ====================
-
-httpClient.interceptors.response.use(
-  (response: AxiosResponse) => {
-    const startTime = (response.config as any)._startTime;
-    const duration = startTime ? Date.now() - startTime : 0;
-    console.log(formatResponseLog(response.status, duration));
-    return response;
-  },
-  (error: AxiosError) => {
-    if (axios.isCancel(error)) {
-      console.log("🚫 请求已取消");
+      (config as any)._startTime = Date.now();
+      return config;
+    },
+    (error: AxiosError) => {
+      console.error("❌ 请求错误:", error.message);
       return Promise.reject(error);
+    },
+  );
+
+  instance.interceptors.response.use(
+    (response: AxiosResponse) => {
+      const startTime = (response.config as any)._startTime;
+      const duration = startTime ? Date.now() - startTime : 0;
+      console.log(formatResponseLog(response.status, duration));
+      return response;
+    },
+    (error: AxiosError) => {
+      if (axios.isCancel(error)) {
+        console.log("🚫 请求已取消");
+        return Promise.reject(error);
+      }
+      const message = getErrorMessage(error);
+      console.error("❌ 响应错误:", message);
+      return Promise.reject(error);
+    },
+  );
+}
+
+// ==================== API 实例 ====================
+
+const env = getCurrentEnv();
+const baseURL = API_URLS[env] || "";
+
+// 默认 API
+const apiDefault = new DefaultApi({ baseURL });
+applyInterceptors(apiDefault.instance);
+
+// 多 group 时通过 registerApi 注册更多实例
+const _extraInstances: Record<string, any> = {};
+
+/**
+ * 注册额外的 API group 实例（多 swagger group 场景）
+ *
+ *   import { Api as xwalletApi } from "./gen/api.xwallet";
+ *   registerApi("xwallet", xwalletApi);
+ */
+export function registerApi(group: string, ApiClass: any) {
+  const instance = new ApiClass({ baseURL });
+  applyInterceptors(instance.instance);
+  _extraInstances[group] = instance;
+}
+
+// ==================== 导出 ====================
+
+/**
+ * 主 API 实例
+ *
+ * 生成后直接点表示法调用:
+ *   const rs = await api.someEndpoint(params);
+ *
+ * 多 group 时，如果方法不在默认实例上，自动搜索已注册的额外实例。
+ */
+export const api = new Proxy(apiDefault as any, {
+  get(target: any, prop: string) {
+    // 默认实例直接方法
+    if (typeof target[prop] === "function") return target[prop].bind(target);
+    // 嵌套属性（生成的 class 把方法放在 group 名下）
+    for (const key of Object.keys(target)) {
+      const nested = target[key];
+      if (nested && typeof nested === "object" && typeof nested[prop] === "function") {
+        return nested[prop].bind(nested);
+      }
     }
-    const message = getErrorMessage(error);
-    console.error("❌ 响应错误:", message);
-    return Promise.reject(error);
-  }
-);
+    // 搜索额外注册的 group
+    for (const instance of Object.values(_extraInstances) as any[]) {
+      if (typeof instance[prop] === "function") return instance[prop].bind(instance);
+      for (const key of Object.keys(instance)) {
+        const nested = instance[key];
+        if (nested && typeof nested === "object" && typeof nested[prop] === "function") {
+          return nested[prop].bind(nested);
+        }
+      }
+    }
+    return undefined;
+  },
+}) as any;
 
-// ==================== 导出的请求辅助函数 ====================
+// ==================== 通用请求工具（网络工具页用） ====================
 
-/** 发送 HTTP 请求（通用），自带计时。非 2xx 响应也正常返回数据。 */
+/** 发送任意 HTTP 请求，非 2xx 也正常返回 */
 export const sendRequest = async (config: {
   url: string;
   method: string;
@@ -83,7 +169,7 @@ export const sendRequest = async (config: {
   const startTime = Date.now();
 
   try {
-    const response = await httpClient.request({
+    const response = await axios.request({
       url: config.url,
       method: config.method,
       headers: config.headers,
@@ -91,15 +177,14 @@ export const sendRequest = async (config: {
       timeout: config.timeout || TIMEOUT.DEFAULT,
       signal: config.signal,
       responseType: "text",
-      validateStatus: () => true, // 不抛异常，所有状态码都正常返回
-    } as any);
+      validateStatus: () => true,
+    });
 
     const duration = Date.now() - startTime;
     const responseBody =
       typeof response.data === "string"
         ? response.data
         : JSON.stringify(response.data);
-    const size = responseBody.length;
 
     return {
       statusCode: response.status,
@@ -107,16 +192,11 @@ export const sendRequest = async (config: {
       headers: response.headers as Record<string, string>,
       body: responseBody,
       duration,
-      size,
+      size: responseBody.length,
     };
   } catch (err: any) {
-    // 网络错误（无响应）
-    const duration = Date.now() - startTime;
-    console.error("❌ 网络请求失败:", err.message);
-
-    // 提取 axios 错误中的响应（如果有）
     if (err.response) {
-      // 虽然 validateStatus 应该阻止异常，但某些情况仍可能触发
+      const duration = Date.now() - startTime;
       const responseBody =
         typeof err.response.data === "string"
           ? err.response.data
@@ -130,9 +210,6 @@ export const sendRequest = async (config: {
         size: responseBody.length,
       };
     }
-
-    throw err; // 真正的网络错误，交给上层处理
+    throw err;
   }
 };
-
-export default httpClient;

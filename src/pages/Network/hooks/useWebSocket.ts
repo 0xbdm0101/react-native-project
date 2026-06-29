@@ -34,6 +34,7 @@ export function useWebSocket(): UseWebSocketReturn {
 
   const wsRef = useRef<WebSocket | null>(null);
   const shouldReconnectRef = useRef<boolean>(true);
+  const reconnectCountRef = useRef<number>(0); // 闭包外最新值
 
   // Cleanup on unmount
   useEffect(() => {
@@ -43,7 +44,7 @@ export function useWebSocket(): UseWebSocketReturn {
     };
   }, []);
 
-  // 连接 WebSocket
+  // 连接 WebSocket（不依赖 reconnectCount 状态）
   const connect = useCallback(() => {
     if (!url.trim()) {
       setError("请输入 WebSocket 服务器地址");
@@ -65,6 +66,7 @@ export function useWebSocket(): UseWebSocketReturn {
         console.log("✅ WebSocket 已连接:", url);
         setStatus(WsStatus.CONNECTED);
         setReconnectCount(0);
+        reconnectCountRef.current = 0;
       };
 
       ws.onmessage = (event: WebSocketMessageEvent) => {
@@ -77,9 +79,9 @@ export function useWebSocket(): UseWebSocketReturn {
         setMessages((prev) => [...prev, message]);
       };
 
-      ws.onerror = (event: Event) => {
-        console.error("❌ WebSocket 错误:", event);
-        setError("WebSocket 连接发生错误");
+      ws.onerror = () => {
+        // 错误详情由 onclose 处理，这里只记一行
+        console.warn("⚠️ WebSocket 异常");
       };
 
       ws.onclose = (event: WsCloseEvent) => {
@@ -91,15 +93,18 @@ export function useWebSocket(): UseWebSocketReturn {
           return;
         }
 
+        const count = reconnectCountRef.current;
+
         // 非正常关闭（code !== 1000）时尝试重连
-        if (event.code !== 1000 && reconnectCount < WS_RECONNECT_CONFIG.maxAttempts) {
-          const delay = WS_RECONNECT_CONFIG.delays[reconnectCount] || 8000;
+        if (event.code !== 1000 && count < WS_RECONNECT_CONFIG.maxAttempts) {
+          const delay = WS_RECONNECT_CONFIG.delays[count] || 8000;
           setStatus(WsStatus.RECONNECTING);
-          console.log(`🔄 将在 ${delay}ms 后重连 (${reconnectCount + 1}/${WS_RECONNECT_CONFIG.maxAttempts})`);
+          console.log(`🔄 将在 ${delay}ms 后重连 (${count + 1}/${WS_RECONNECT_CONFIG.maxAttempts})`);
 
           setTimeout(() => {
             if (shouldReconnectRef.current) {
-              setReconnectCount((prev) => prev + 1);
+              reconnectCountRef.current = count + 1;
+              setReconnectCount(count + 1);
               connect();
             }
           }, delay);
@@ -117,7 +122,7 @@ export function useWebSocket(): UseWebSocketReturn {
       setStatus(WsStatus.ERROR);
       setError(`创建连接失败: ${err.message}`);
     }
-  }, [url, reconnectCount]);
+  }, [url]); // 只依赖 url，不依赖 reconnectCount
 
   // 断开连接（手动，不触发重连）
   const disconnect = useCallback(() => {
