@@ -221,9 +221,6 @@ export default function MQTTOperationsPage() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         bounces={true}
-        onScroll={() => {
-          console.log("scroll");
-        }}
         scrollEventThrottle={16}
       >
         <View style={styles.section}>
