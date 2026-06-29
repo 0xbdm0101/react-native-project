@@ -8,6 +8,7 @@ const ROUTE_MAP: Record<string, string> = {
   iot: "/device-list",
   bluetooth: "/ble-search",
   mqtt: "/mqtt",
+  network: "/network",
 };
 
 export function Home() {

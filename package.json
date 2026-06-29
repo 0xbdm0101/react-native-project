@@ -20,6 +20,7 @@
     "@react-native-community/netinfo": "^12.0.1",
     "@tamagui/config": "^2.2.0",
     "@tamagui/font-inter": "^2.2.0",
+    "axios": "^1.18.1",
     "crypto-js": "^4.2.0",
     "derive-valtio": "^0.2.0",
     "expo": "~54.0.0",

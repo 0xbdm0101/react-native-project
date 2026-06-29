@@ -14,10 +14,10 @@
 
 **Purpose**: 安装依赖 + 创建目录结构
 
-- [ ] T001 Install axios dependency with `npx expo install axios`
-- [ ] T002 [P] Create `src/api/` directory and file stubs per plan.md
-- [ ] T003 [P] Create `src/pages/Network/` directory structure per plan.md
-- [ ] T004 [P] Create `app/network.tsx` route file exporting Network page
+- [x] T001 Install axios dependency with `npm install --save axios --legacy-peer-deps`
+- [x] T002 [P] Create `src/api/` directory and file stubs per plan.md
+- [x] T003 [P] Create `src/pages/Network/` directory structure per plan.md
+- [x] T004 [P] Create `app/network.tsx` route file exporting Network page
 
 ---
 
@@ -27,12 +27,12 @@
 
 **⚠️ CRITICAL**: 本阶段必须完成才能开始任何用户故事。
 
-- [ ] T005 Create API config in `src/api/config.ts` — 超时时间、默认 Content-Type、最大响应体积等常量
-- [ ] T006 [P] Create API utilities in `src/api/utils.ts` — 请求日志格式化、错误信息提取
-- [ ] T007 Create axios instance with interceptors in `src/api/index.ts` — 请求/响应拦截器（日志、错误处理、超时、取消）
-- [ ] T008 [P] Create all enums and UI text constants in `src/pages/Network/constants.ts` — HttpMethod, BodyType, WsStatus, Direction, UI_TEXTS, STYLE_CONFIG, 状态映射表
-- [ ] T009 [P] Create all type definitions in `src/pages/Network/types.ts` — HttpRequest, HttpResponse, WsConnection, WsMessage, RequestHistory, HttpHeader
-- [ ] T010 Create Network page shell with HTTP/WebSocket tab switcher in `src/pages/Network/index.tsx` (空壳，两个标签各放占位 Text)
+- [x] T005 Create API config in `src/api/config.ts` — 超时时间、默认 Content-Type、最大响应体积等常量
+- [x] T006 [P] Create API utilities in `src/api/utils.ts` — 请求日志格式化、错误信息提取
+- [x] T007 Create axios instance with interceptors in `src/api/index.ts` — 请求/响应拦截器（日志、错误处理、超时、取消）
+- [x] T008 [P] Create all enums and UI text constants in `src/pages/Network/constants.ts` — HttpMethod, BodyType, WsStatus, Direction, UI_TEXTS, STYLE_CONFIG, 状态映射表
+- [x] T009 [P] Create all type definitions in `src/pages/Network/types.ts` — HttpRequest, HttpResponse, WsConnection, WsMessage, RequestHistory, HttpHeader
+- [x] T010 Create Network page shell with HTTP/WebSocket tab switcher in `src/pages/Network/index.tsx` (空壳，两个标签各放占位 Text)
 
 **Checkpoint**: 骨架就绪 — 路由可访问，Tab 可切换，空页面显示正常。
 
@@ -46,20 +46,20 @@
 
 ### Services Layer
 
-- [ ] T011 [US1] Create HTTP request service in `src/pages/Network/services/index.ts` — 封装 `src/api/` 实例，导出 `sendRequest()` 函数（接受 HttpRequest 参数，返回 HttpResponse）
+- [x] T011 [US1] Create HTTP request service in `src/pages/Network/services/index.ts` — 封装 `src/api/` 实例，导出 `sendRequest()` 函数（接受 HttpRequest 参数，返回 HttpResponse）
 
 ### Custom Hook
 
-- [ ] T012 [US1] Create useHttpRequest hook in `src/pages/Network/hooks/useHttpRequest.ts` — 管理请求状态（idle/loading/success/error）、响应数据、耗时计算
+- [x] T012 [US1] Create useHttpRequest hook in `src/pages/Network/hooks/useHttpRequest.ts` — 管理请求状态（idle/loading/success/error）、响应数据、耗时计算
 
 ### Components
 
-- [ ] T013 [US1] Create RequestBuilder component in `src/pages/Network/components/RequestBuilder.tsx` — URL 输入框、方法选择器（GET/POST/PUT/DELETE）、Header 键值对编辑器（增删改）、Body 文本编辑器、发送按钮、取消按钮
-- [ ] T014 [US1] Create ResponseViewer component in `src/pages/Network/components/ResponseViewer.tsx` — 状态码 + 耗时展示、响应头可折叠列表、响应体格式化展示（JSON 缩进 / 原始文本）、无响应时显示空白状态
+- [x] T013 [US1] Create RequestBuilder component in `src/pages/Network/components/RequestBuilder.tsx` — URL 输入框、方法选择器（GET/POST/PUT/DELETE）、Header 键值对编辑器（增删改）、Body 文本编辑器、发送按钮、取消按钮
+- [x] T014 [US1] Create ResponseViewer component in `src/pages/Network/components/ResponseViewer.tsx` — 状态码 + 耗时展示、响应头可折叠列表、响应体格式化展示（JSON 缩进 / 原始文本）、无响应时显示空白状态
 
 ### Integration
 
-- [ ] T015 [US1] Integrate useHttpRequest hook + RequestBuilder + ResponseViewer into `src/pages/Network/index.tsx` HTTP tab
+- [x] T015 [US1] Integrate useHttpRequest hook + RequestBuilder + ResponseViewer into `src/pages/Network/index.tsx` HTTP tab
 
 **Checkpoint**: HTTP 请求功能完整可用，可以独立验证。
 
@@ -73,15 +73,15 @@
 
 ### Custom Hook
 
-- [ ] T016 [US2] Create useWebSocket hook in `src/pages/Network/hooks/useWebSocket.ts` — 管理连接状态（WsStatus）、消息列表（WsMessage[]）、连接/断开/发送/重连逻辑、指数递增重连（2s→4s→8s 最多 3 次）、cleanup 自动断开
+- [x] T016 [US2] Create useWebSocket hook in `src/pages/Network/hooks/useWebSocket.ts` — 管理连接状态（WsStatus）、消息列表（WsMessage[]）、连接/断开/发送/重连逻辑、指数递增重连（2s→4s→8s 最多 3 次）、cleanup 自动断开
 
 ### Component
 
-- [ ] T017 [US2] Create WebSocketTerminal component in `src/pages/Network/components/WebSocketTerminal.tsx` — URL 输入框、连接/断开按钮、连接状态指示、消息列表（区分发送/接收样式）、消息输入框 + 发送按钮、连接中/断开时输入框禁用
+- [x] T017 [US2] Create WebSocketTerminal component in `src/pages/Network/components/WebSocketTerminal.tsx` — URL 输入框、连接/断开按钮、连接状态指示、消息列表（区分发送/接收样式）、消息输入框 + 发送按钮、连接中/断开时输入框禁用
 
 ### Integration
 
-- [ ] T018 [US2] Integrate useWebSocket hook + WebSocketTerminal into `src/pages/Network/index.tsx` WebSocket tab
+- [x] T018 [US2] Integrate useWebSocket hook + WebSocketTerminal into `src/pages/Network/index.tsx` WebSocket tab
 
 **Checkpoint**: WebSocket 功能完整可用，HTTP + WebSocket 均可独立工作。
 
@@ -95,15 +95,15 @@
 
 ### Implementation
 
-- [ ] T019 [US3] Add history persistence to useHttpRequest in `src/pages/Network/hooks/useHttpRequest.ts` — 每次请求成功后自动保存到 AsyncStorage（最多 20 条，按时间倒序）
+- [x] T019 [US3] Add history persistence to useHttpRequest in `src/pages/Network/hooks/useHttpRequest.ts` — 每次请求成功后自动保存到 AsyncStorage（最多 20 条，按时间倒序）
 
 ### Component
 
-- [ ] T020 [US3] Create RequestHistory component in `src/pages/Network/components/RequestHistory.tsx` — 历史列表（URL + 方法 + 时间）、点击回填到请求表单、下拉刷新
+- [x] T020 [US3] Create RequestHistory component in `src/pages/Network/components/RequestHistory.tsx` — 历史列表（URL + 方法 + 时间）、点击回填到请求表单、下拉刷新
 
 ### Integration
 
-- [ ] T021 [US3] Integrate RequestHistory + history load into `src/pages/Network/index.tsx` — 历史按钮打开 BottomSheet 或 Modal 展示列表
+- [x] T021 [US3] Integrate RequestHistory + history load into `src/pages/Network/index.tsx` — 历史按钮打开 BottomSheet 或 Modal 展示列表
 
 **Checkpoint**: 全部三个用户故事可独立验证。
 
@@ -113,9 +113,9 @@
 
 **Purpose**: 收尾优化
 
-- [ ] T022 Wire up Home page navigation: update MenuGrid/MENU_LIST to navigate to `/network` for "网络通讯" item
-- [ ] T023 Run quickstart.md validation (HTTP GET/POST, WebSocket echo, timeout test, history test)
-- [ ] T024 Code cleanup: verify all constants extracted, enums used, error messages in Chinese, no hardcoded values
+- [x] T022 Wire up Home page navigation: update MenuGrid/MENU_LIST to navigate to `/network` for "网络通讯" item
+- [x] T023 Run quickstart.md validation (HTTP GET/POST, WebSocket echo, timeout test, history test)
+- [x] T024 Code cleanup: verify all constants extracted, enums used, error messages in Chinese, no hardcoded values
 
 ---
 
