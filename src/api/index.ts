@@ -31,6 +31,7 @@ import { API_URLS } from "@/config/network";
 import { getCurrentEnv } from "@/config/env";
 
 // 静态导入生成的 API 类（gen:api 后生成）
+// 每个 swagger group 一个文件，这里导入默认的
 import { Api as DefaultApi } from "./gen/api.default";
 
 export type { AxiosResponse, AxiosError, InternalAxiosRequestConfig };
@@ -125,18 +126,18 @@ export function registerApi(group: string, ApiClass: any) {
  */
 export const api = new Proxy(apiDefault as any, {
   get(target: any, prop: string) {
-    // 默认实例直接方法
-    if (typeof target[prop] === "function") return target[prop].bind(target);
-    // 嵌套属性（生成的 class 把方法放在 group 名下）
+    // 1. 直接属性（如 pet、store、user 命名空间对象）
+    if (prop in target) return target[prop];
+    // 2. 嵌套方法（prop 不存在于 target 但存在于 target.xxx 下）
     for (const key of Object.keys(target)) {
       const nested = target[key];
       if (nested && typeof nested === "object" && typeof nested[prop] === "function") {
         return nested[prop].bind(nested);
       }
     }
-    // 搜索额外注册的 group
+    // 3. 搜索额外注册的 group
     for (const instance of Object.values(_extraInstances) as any[]) {
-      if (typeof instance[prop] === "function") return instance[prop].bind(instance);
+      if (prop in instance) return instance[prop];
       for (const key of Object.keys(instance)) {
         const nested = instance[key];
         if (nested && typeof nested === "object" && typeof nested[prop] === "function") {

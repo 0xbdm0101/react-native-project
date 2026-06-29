@@ -8,7 +8,7 @@ import { RunEnvEnum } from "./env";
 
 /** 各环境 API 基础地址 */
 export const API_URLS: Partial<Record<RunEnvEnum, string>> = {
-  [RunEnvEnum.DEVELOPMENT]: "http://localhost:8080",
+  [RunEnvEnum.DEVELOPMENT]: "https://petstore.swagger.io/v2",
   [RunEnvEnum.STAGING]: "https://staging-api.example.com",
   [RunEnvEnum.PRODUCTION]: "https://api.example.com",
 };
@@ -23,7 +23,7 @@ export const API_URLS: Partial<Record<RunEnvEnum, string>> = {
 export const API_DOCS_JSON_URLS: Partial<
   Record<RunEnvEnum, string | string[]>
 > = {
-  [RunEnvEnum.DEVELOPMENT]: ["https://petstore.swagger.io/v2/swagger.json "],
+  [RunEnvEnum.DEVELOPMENT]: ["https://petstore.swagger.io/v2/swagger.json"],
   [RunEnvEnum.STAGING]: "https://staging-api.example.com/v2/api-docs",
   [RunEnvEnum.PRODUCTION]: "https://api.example.com/v2/api-docs",
 };

@@ -12,6 +12,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { useHttpRequest } from "./hooks/useHttpRequest";
 import { useWebSocket } from "./hooks/useWebSocket";
 import RequestBuilder from "./components/RequestBuilder";
@@ -23,6 +24,7 @@ import type { RequestHistoryItem } from "./types";
 type TabKey = "http" | "websocket";
 
 export default function NetworkPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>("http");
 
   const http = useHttpRequest();
@@ -37,6 +39,9 @@ export default function NetworkPage() {
     <View style={styles.container}>
       {/* 顶部标题 */}
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Text style={styles.backBtnText}>← 返回</Text>
+        </TouchableOpacity>
         <Text style={styles.title}>{UI_TEXTS.PAGE_TITLE}</Text>
         {activeTab === "http" && (
           <TouchableOpacity
@@ -210,6 +215,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 4,
+  },
+  backBtn: {
+    marginRight: 12,
+    padding: 4,
+  },
+  backBtnText: {
+    color: COLORS.PRIMARY,
+    fontSize: 16,
   },
   title: {
     fontSize: 22,

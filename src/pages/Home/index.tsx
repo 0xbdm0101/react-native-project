@@ -1,8 +1,9 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 import { TopBar } from "./components/TopBar";
 import { MenuGrid } from "./components/MenuGrid";
+import { ApiDemo } from "./components/ApiDemo";
 
 const ROUTE_MAP: Record<string, string> = {
   iot: "/device-list",
@@ -22,10 +23,11 @@ export function Home() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <TopBar deviceName="我的设备" />
       <MenuGrid onPressItem={handlePressItem} />
-    </View>
+      <ApiDemo />
+    </ScrollView>
   );
 }
 

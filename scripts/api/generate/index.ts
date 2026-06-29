@@ -16,8 +16,8 @@ export async function generate({ env }: { env?: string }) {
       const group = getGroupFromUrl(url);
 
       return generateApi({
-        // @ts-ignore — name option compatible with v13
-        name: `api.${group}.ts`,
+        // @ts-ignore — v13.2 用 fileName
+        fileName: `api.${group}.ts`,
         url,
         output: resolve(process.cwd(), "./src/api/gen"),
         generateUnionEnums: true,
