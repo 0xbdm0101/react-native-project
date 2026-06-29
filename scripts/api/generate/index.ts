@@ -4,12 +4,13 @@ import { API_DOCS_JSON_URLS } from "../../../src/config/network";
 import { resolve } from "node:path";
 
 export async function generate({ env }: { env?: string }) {
-  const usableEnv = env || RunEnvEnum.DEVELOPMENT;
+  const usableEnv = (env as RunEnvEnum) || RunEnvEnum.DEVELOPMENT;
   const urlConfig = (API_DOCS_JSON_URLS as any)[usableEnv];
   const urls = normalizeUrls(urlConfig);
   if (!urlConfig) {
     throw new Error("Could not find api json document url");
   }
+
   // 多项目循环执行 generateApi，一个 group 一个文件
   await Promise.all(
     urls.map((url) => {

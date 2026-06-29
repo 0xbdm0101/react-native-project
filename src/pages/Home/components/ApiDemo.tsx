@@ -1,9 +1,9 @@
 /**
- * API 调用 Demo — 演示完整的 api → services → component 调用链路
+ * API 调用 Demo — TanStack Query + 生成 API 的完整链路
  *
- * 参考 create-react-dex-app 的 Swap/services/index.ts 模式
+ * 参考 create-react-dex-app 的 Swap/services 模式
  */
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -12,64 +12,59 @@ import {
   ActivityIndicator,
   ScrollView,
 } from "react-native";
-import { getPetsByStatus } from "../services";
+import { usePets } from "../hooks/usePets";
 
 export function ApiDemo() {
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const callApi = async () => {
-    setLoading(true);
-    setError(null);
-    setResult(null);
-
-    try {
-      // 🎯 这就是标准调用方式：services 层封装，组件直接调
-      const pets = await getPetsByStatus(["available"]);
-      setResult(pets);
-    } catch (err: any) {
-      setError(err.message || "请求失败");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data, error, isLoading, isFetching, refetch } = usePets();
 
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>API 调用示例</Text>
 
-      {/* 调用链路说明 */}
+      {/* 调用链路 */}
       <Text style={styles.codeBlock}>
-        {`// 1️⃣ src/api/index.ts — 生成后直接导出\nimport { Api as DefaultApi } from "./gen/Api";\nconst api = new Proxy(..., any);\n\nexport { api };\n\n// 2️⃣ services/index.ts — 业务封装\nimport { api as http } from "@/api";\n\nexport const getPetsByStatus = async (\n  status,\n) => {\n  const rs = await http.pet\n    .findPetsByStatus({ status });\n  return rs;\n};\n\n// 3️⃣ 组件调用\nimport { getPetsByStatus }\n  from "../services";\nconst pets = await getPetsByStatus(\n  ["available"],\n);`}
+        {`// 1️⃣ api/index.ts — 生成后导出\nexport const api = apiDefault;\n\n// 2️⃣ hooks/usePets.ts — TanStack Query\nexport function usePets() {\n  return useHttp(\n    ["pets", "available"],\n    () => http.pet\n      .findPetsByStatus({\n        status: ["available"],\n      }),\n  );\n}\n\n// 3️⃣ 组件 — 一行调用\nconst { data, isLoading,\n  refetch } = usePets();`}
       </Text>
 
+      {/* 操作 */}
       <TouchableOpacity
-        style={[styles.button, loading && styles.buttonDisabled]}
-        onPress={callApi}
-        disabled={loading}
+        style={[styles.button, isLoading && styles.buttonDisabled]}
+        onPress={() => refetch()}
+        disabled={isLoading}
       >
-        {loading ? (
+        {isLoading ? (
           <ActivityIndicator color="#000" size="small" />
         ) : (
-          <Text style={styles.buttonText}>调用 Petstore API</Text>
+          <Text style={styles.buttonText}>
+            {data ? "刷新数据" : "调用 Petstore API"}
+          </Text>
         )}
       </TouchableOpacity>
 
+      {/* 缓存状态 */}
+      {data && (
+        <Text style={styles.cacheHint}>
+          {isFetching
+            ? "🔄 后台更新中..."
+            : "✅ 缓存命中 (30s 内读缓存)"}
+        </Text>
+      )}
+
+      {/* 错误 */}
       {error && (
         <View style={styles.errorBox}>
-          <Text style={styles.errorText}>❌ {error}</Text>
+          <Text style={styles.errorText}>❌ {String(error)}</Text>
         </View>
       )}
 
-      {result && (
+      {/* 结果 */}
+      {data && (
         <ScrollView style={styles.resultBox}>
-          <Text style={styles.resultTitle}>
-            ✅ {Array.isArray(result) ? `${result.length} 条结果` : "成功"}
-          </Text>
           <Text style={styles.resultText}>
             {JSON.stringify(
-              Array.isArray(result) ? result.slice(0, 2) : result,
+              Array.isArray(data)
+                ? { count: (data as any).length, sample: data.slice(0, 2) }
+                : data,
               null,
               2,
             )}
@@ -119,6 +114,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
   },
+  cacheHint: {
+    marginTop: 8,
+    fontSize: 11,
+    color: "#66BB6A",
+    textAlign: "center",
+  },
   errorBox: {
     marginTop: 12,
     backgroundColor: "rgba(239,83,80,0.15)",
@@ -135,11 +136,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     maxHeight: 200,
-  },
-  resultTitle: {
-    fontSize: 13,
-    color: "#66BB6A",
-    marginBottom: 8,
   },
   resultText: {
     fontFamily: "monospace",

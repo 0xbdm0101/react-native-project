@@ -4,7 +4,7 @@ import tamaguiConfig from "../../tamagui.config";
 import { composeProviders } from "./composeProviders";
 import { StorageProvider } from "./StorageProvider";
 import { I18nProvider } from "./I18nProvider";
-import { SwrProvider } from "./SwrProvider";
+import { QueryProvider } from "./QueryProvider";
 import { TxManagerProvider } from "./TxManagerProvider";
 
 const AppProviders = composeProviders(
@@ -12,7 +12,7 @@ const AppProviders = composeProviders(
   StorageProvider,
   I18nProvider,
   TxManagerProvider,
-  SwrProvider
+  QueryProvider,
 );
 
 export function Providers({ children }: React.PropsWithChildren) {

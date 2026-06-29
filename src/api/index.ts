@@ -2,21 +2,15 @@
  * API 主入口 — axios 实例 + 拦截器
  *
  * 参考 create-react-dex-app 模式：
- *   - 每个 swagger group 生成一个 Api 类（src/api/gen/api.{group}.ts）
- *   - 静态 import → 创建实例 → applyInterceptors → 导出
- *   - 业务代码通过点表示法调用，有完整 TS 类型提示
+ *   - gen:api 生成 Api 类到 src/api/gen/
+ *   - 这里静态导入 → new 实例 → applyInterceptors → 导出
+ *   - 业务代码通过点表示法调用: api.pet.findPetsByStatus(...)
  *
- * 使用方式:
- *   import { api } from "@/api";
- *   const result = await api.someEndpoint(params);
- *
- * 多 group 时:
+ * 多 group 时在这里加几行即可：
  *   import { Api as xwalletApi } from "./gen/api.xwallet";
- *   registerApi("xwallet", xwalletApi);
- *   // 然后也可以通过 api.xxx() 调用
- *
- * 生成 API:
- *   npm run gen:api -- --env development
+ *   const apiXwallet = new xwalletApi({ baseURL: "" });
+ *   applyInterceptors(apiXwallet.instance);
+ *   export const { xwallet: walletApi } = apiXwallet;
  */
 
 import axios, {
@@ -30,20 +24,22 @@ import { formatRequestLog, formatResponseLog, getErrorMessage } from "./utils";
 import { API_URLS } from "@/config/network";
 import { getCurrentEnv } from "@/config/env";
 
-// 静态导入生成的 API 类（gen:api 后生成）
-// 每个 swagger group 一个文件，这里导入默认的
-import { Api as DefaultApi } from "./gen/api.default";
+// ===== 生成的 API 类（gen:api 后生成，每个 swagger group 一个） =====
+
+import { Api } from "./gen/api.default";
+
+// ===== 实例化 + 拦截器 =====
+
+const env = getCurrentEnv();
+const baseURL = API_URLS[env] || "";
 
 export type { AxiosResponse, AxiosError, InternalAxiosRequestConfig };
-
-// ==================== 拦截器 ====================
 
 function applyInterceptors(instance: AxiosInstance) {
   instance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
       if (!config.baseURL) {
-        const env = getCurrentEnv();
-        config.baseURL = API_URLS[env];
+        config.baseURL = API_URLS[getCurrentEnv()];
       }
 
       const method = config.method?.toUpperCase() || "GET";
@@ -54,12 +50,7 @@ function applyInterceptors(instance: AxiosInstance) {
             ? JSON.stringify(config.data)
             : undefined;
       console.log(
-        formatRequestLog(
-          method,
-          config.url || "",
-          config.headers as Record<string, string>,
-          body,
-        ),
+        formatRequestLog(method, config.url || "", config.headers as Record<string, string>, body),
       );
 
       (config as any)._startTime = Date.now();
@@ -90,66 +81,28 @@ function applyInterceptors(instance: AxiosInstance) {
   );
 }
 
-// ==================== API 实例 ====================
+// ===== 默认 API 实例 =====
 
-const env = getCurrentEnv();
-const baseURL = API_URLS[env] || "";
-
-// 默认 API
-const apiDefault = new DefaultApi({ baseURL });
+const apiDefault = new Api({ baseURL: "" });
 applyInterceptors(apiDefault.instance);
-
-// 多 group 时通过 registerApi 注册更多实例
-const _extraInstances: Record<string, any> = {};
-
-/**
- * 注册额外的 API group 实例（多 swagger group 场景）
- *
- *   import { Api as xwalletApi } from "./gen/api.xwallet";
- *   registerApi("xwallet", xwalletApi);
- */
-export function registerApi(group: string, ApiClass: any) {
-  const instance = new ApiClass({ baseURL });
-  applyInterceptors(instance.instance);
-  _extraInstances[group] = instance;
-}
-
-// ==================== 导出 ====================
 
 /**
  * 主 API 实例
  *
- * 生成后直接点表示法调用:
- *   const rs = await api.someEndpoint(params);
+ * 点表示法调用:
+ *   import { api } from "@/api";
+ *   const pets = await api.pet.findPetsByStatus({ status: ["available"] });
+ *   const inv = await api.store.getInventory();
  *
- * 多 group 时，如果方法不在默认实例上，自动搜索已注册的额外实例。
+ * 多 group 时在这里加几行:
+ *   import { Api as xwalletApi } from "./gen/api.xwallet";
+ *   const apiXwallet = new xwalletApi({ baseURL: "" });
+ *   applyInterceptors(apiXwallet.instance);
+ *   export const walletApi = apiXwallet;
  */
-export const api = new Proxy(apiDefault as any, {
-  get(target: any, prop: string) {
-    // 1. 直接属性（如 pet、store、user 命名空间对象）
-    if (prop in target) return target[prop];
-    // 2. 嵌套方法（prop 不存在于 target 但存在于 target.xxx 下）
-    for (const key of Object.keys(target)) {
-      const nested = target[key];
-      if (nested && typeof nested === "object" && typeof nested[prop] === "function") {
-        return nested[prop].bind(nested);
-      }
-    }
-    // 3. 搜索额外注册的 group
-    for (const instance of Object.values(_extraInstances) as any[]) {
-      if (prop in instance) return instance[prop];
-      for (const key of Object.keys(instance)) {
-        const nested = instance[key];
-        if (nested && typeof nested === "object" && typeof nested[prop] === "function") {
-          return nested[prop].bind(nested);
-        }
-      }
-    }
-    return undefined;
-  },
-}) as any;
+export const api = apiDefault;
 
-// ==================== 通用请求工具（网络工具页用） ====================
+// ===== 通用请求工具（网络工具页用） =====
 
 /** 发送任意 HTTP 请求，非 2xx 也正常返回 */
 export const sendRequest = async (config: {
@@ -183,9 +136,7 @@ export const sendRequest = async (config: {
 
     const duration = Date.now() - startTime;
     const responseBody =
-      typeof response.data === "string"
-        ? response.data
-        : JSON.stringify(response.data);
+      typeof response.data === "string" ? response.data : JSON.stringify(response.data);
 
     return {
       statusCode: response.status,
