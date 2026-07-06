@@ -26,19 +26,19 @@ const envMap: Record<
 > = {
   iot: {
     dev: {
-      baseURL: "https://webapi.orswap.org",
+      baseURL: "https://petstore.swagger.io/v2",
       envName: "iot-dev",
       apiVersion: "v1",
       runEnv: RunEnvEnum.DEVELOPMENT,
     },
     test: {
-      baseURL: "https://webapi.orswap.org",
+      baseURL: "https://petstore.swagger.io/v2",
       envName: "iot-test",
       apiVersion: "v1",
       runEnv: RunEnvEnum.STAGING,
     },
     prod: {
-      baseURL: "https://webapi.orswap.org",
+      baseURL: "https://petstore.swagger.io/v2",
       envName: "iot-prod",
       apiVersion: "v1",
       runEnv: RunEnvEnum.PRODUCTION,

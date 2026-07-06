@@ -21,7 +21,7 @@ export function MenuIcon({ item, onPress }: MenuIconProps) {
 
 const styles = StyleSheet.create({
   item: {
-    width: "20%",
+    width: "25%",
     alignItems: "center",
     paddingVertical: 16,
   },

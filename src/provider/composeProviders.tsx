@@ -8,7 +8,6 @@ import React from "react";
  *   composeProviders(
  *     [StorageProvider, {}],
  *     [I18nProvider, { locale: 'zh' }],
- *     [SwrProvider, {}],
  *   )
  */
 export function composeProviders(
