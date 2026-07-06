@@ -21,8 +21,7 @@ import axios, {
 } from "axios";
 import { TIMEOUT, DEFAULT_CONFIG } from "./config";
 import { formatRequestLog, formatResponseLog, getErrorMessage } from "./utils";
-import { API_URLS } from "@/config/network";
-import { getCurrentEnv } from "@/config/env";
+import { getAPIBaseURL } from "@/config/network";
 
 // ===== 生成的 API 类（gen:api 后生成，每个 swagger group 一个） =====
 
@@ -30,17 +29,14 @@ import { Api } from "./gen/api.default";
 
 // ===== 实例化 + 拦截器 =====
 
-const env = getCurrentEnv();
-const baseURL = API_URLS[env] || "";
+const baseURL = getAPIBaseURL();
 
 export type { AxiosResponse, AxiosError, InternalAxiosRequestConfig };
 
 function applyInterceptors(instance: AxiosInstance) {
   instance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-      if (!config.baseURL) {
-        config.baseURL = API_URLS[getCurrentEnv()];
-      }
+      config.baseURL = getAPIBaseURL();
 
       const method = config.method?.toUpperCase() || "GET";
       const body =
@@ -50,7 +46,12 @@ function applyInterceptors(instance: AxiosInstance) {
             ? JSON.stringify(config.data)
             : undefined;
       console.log(
-        formatRequestLog(method, config.url || "", config.headers as Record<string, string>, body),
+        formatRequestLog(
+          method,
+          config.url || "",
+          config.headers as Record<string, string>,
+          body,
+        ),
       );
 
       (config as any)._startTime = Date.now();
@@ -136,7 +137,9 @@ export const sendRequest = async (config: {
 
     const duration = Date.now() - startTime;
     const responseBody =
-      typeof response.data === "string" ? response.data : JSON.stringify(response.data);
+      typeof response.data === "string"
+        ? response.data
+        : JSON.stringify(response.data);
 
     return {
       statusCode: response.status,

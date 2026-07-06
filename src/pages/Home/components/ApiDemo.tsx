@@ -15,7 +15,7 @@ import {
 import { usePets } from "../hooks/usePets";
 
 export function ApiDemo() {
-  const { data, error, isLoading, isFetching, refetch } = usePets();
+  const { data, error, isLoading, isFetching, isStale, refetch } = usePets();
 
   return (
     <View style={styles.container}>
@@ -46,7 +46,9 @@ export function ApiDemo() {
         <Text style={styles.cacheHint}>
           {isFetching
             ? "🔄 后台更新中..."
-            : "✅ 缓存命中 (30s 内读缓存)"}
+            : isStale
+              ? "⚠️ 缓存已过期，点击刷新"
+              : "✅ 缓存有效 (30s 内)"}
         </Text>
       )}
 

@@ -11,7 +11,13 @@
     "web": "npm run messages:compile && expo start --web",
     "messages:extract": "lingui extract",
     "messages:compile": "lingui compile --typescript",
-    "gen:api": "tsx scripts/api/generate/cli.ts"
+    "gen:api": "tsx scripts/api/generate/cli.ts",
+    "env:dev": "tsx scripts/env/loadConfig.ts iot-dev",
+    "env:test": "tsx scripts/env/loadConfig.ts iot-test",
+    "env:prod": "tsx scripts/env/loadConfig.ts iot-prod",
+    "start:dev": "npm run env:dev && expo start",
+    "start:test": "npm run env:test && expo start",
+    "start:prod": "npm run env:prod && expo start"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",
