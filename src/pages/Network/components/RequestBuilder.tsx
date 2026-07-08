@@ -12,6 +12,7 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
+import { Input } from "@/components/ui/Input";
 import {
   HttpMethod,
   BodyType,
@@ -75,10 +76,8 @@ export default function RequestBuilder({
     <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
       {/* URL 输入 */}
       <Text style={styles.label}>URL</Text>
-      <TextInput
-        style={styles.input}
+      <Input
         placeholder={UI_TEXTS.URL_PLACEHOLDER}
-        placeholderTextColor={COLORS.TEXT_SECONDARY}
         value={request.url}
         onChangeText={(text) => onUpdate("url", text)}
         autoCapitalize="none"
@@ -174,10 +173,10 @@ export default function RequestBuilder({
       {request.method !== HttpMethod.GET && (
         <>
           <Text style={styles.label}>Body</Text>
-          <TextInput
-            style={[styles.input, styles.bodyInput]}
+          <Input
+            style={styles.bodyInput}
+            inputStyle={{ fontFamily: "monospace", fontSize: 13 }}
             placeholder={UI_TEXTS.BODY_PLACEHOLDER}
-            placeholderTextColor={COLORS.TEXT_SECONDARY}
             value={request.body}
             onChangeText={(text) => onUpdate("body", text)}
             multiline
@@ -298,8 +297,6 @@ const styles = StyleSheet.create({
   },
   bodyInput: {
     minHeight: 100,
-    fontFamily: "monospace",
-    fontSize: 13,
   },
   actionRow: {
     marginTop: 16,

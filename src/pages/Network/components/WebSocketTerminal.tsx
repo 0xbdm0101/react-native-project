@@ -7,11 +7,11 @@ import React, { useState, useRef } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   FlatList,
   StyleSheet,
 } from "react-native";
+import { Input } from "@/components/ui/Input";
 import {
   WsStatus,
   Direction,
@@ -101,10 +101,9 @@ export default function WebSocketTerminal({
     <View style={styles.container}>
       {/* URL 输入 + 连接按钮 */}
       <View style={styles.urlRow}>
-        <TextInput
+        <Input
           style={styles.urlInput}
           placeholder={UI_TEXTS.WS_URL_PLACEHOLDER}
-          placeholderTextColor={COLORS.TEXT_SECONDARY}
           value={url}
           onChangeText={onUrlChange}
           autoCapitalize="none"
@@ -181,10 +180,9 @@ export default function WebSocketTerminal({
 
       {/* 消息输入栏 */}
       <View style={styles.inputBar}>
-        <TextInput
+        <Input
           style={styles.messageInput}
           placeholder={UI_TEXTS.WS_MESSAGE_PLACEHOLDER}
-          placeholderTextColor={COLORS.TEXT_SECONDARY}
           value={inputText}
           onChangeText={setInputText}
           autoCapitalize="none"
@@ -220,11 +218,6 @@ const styles = StyleSheet.create({
   },
   urlInput: {
     flex: 1,
-    backgroundColor: COLORS.BG_INPUT,
-    borderRadius: 8,
-    padding: 12,
-    color: COLORS.TEXT_PRIMARY,
-    fontSize: 14,
   },
   connectBtn: {
     backgroundColor: COLORS.SUCCESS,
@@ -301,11 +294,6 @@ const styles = StyleSheet.create({
   },
   messageInput: {
     flex: 1,
-    backgroundColor: COLORS.BG_INPUT,
-    borderRadius: 8,
-    padding: 10,
-    color: COLORS.TEXT_PRIMARY,
-    fontSize: 14,
   },
   sendBtn: {
     backgroundColor: COLORS.PRIMARY,
