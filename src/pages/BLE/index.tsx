@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, Pressable, FlatList, Linking } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import { Device } from "react-native-ble-plx";
 import { useBLE } from "./hooks/useBLE";
+import { PageHeader } from "@/components/PageHeader";
 import { BLEDeviceCard } from "./components/BLEDeviceCard";
 import { ScanButton } from "./components/ScanButton";
 import { DeviceDetail } from "./DeviceDetail";
@@ -15,7 +15,6 @@ import {
 } from "./constants";
 
 export function BLEDeviceSearch() {
-  const router = useRouter();
   const {
     bluetoothState,
     scanStatus,
@@ -162,13 +161,7 @@ export function BLEDeviceSearch() {
   return (
     <View style={styles.container}>
       {/* 头部 */}
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color="#fff" />
-        </Pressable>
-        <Text style={styles.headerTitle}>蓝牙设备</Text>
-        <View style={styles.placeholder} />
-      </View>
+      <PageHeader title="蓝牙设备" />
 
       {/* 蓝牙状态提示 */}
       {renderBluetoothState()}
@@ -201,18 +194,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#000",
-    paddingTop: 16,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  backBtn: { padding: 8 },
-  headerTitle: { color: "#fff", fontSize: 18, fontWeight: "600" },
-  placeholder: { width: 40 },
   stateBanner: {
     flexDirection: "row",
     alignItems: "center",

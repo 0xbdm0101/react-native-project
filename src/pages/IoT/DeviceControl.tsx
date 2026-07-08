@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, View, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { PageHeader } from "@/components/PageHeader";
 import { MOCK_SPEAKER_STATE } from "./constants";
 
 export function DeviceControl() {
-  const router = useRouter();
   const [state, setState] = useState(MOCK_SPEAKER_STATE);
 
   const togglePlay = () => setState((s) => ({ ...s, playing: !s.playing }));
@@ -15,13 +14,7 @@ export function DeviceControl() {
   return (
     <View style={styles.container}>
       {/* 顶部返回 */}
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color="#fff" />
-        </Pressable>
-        <Text style={styles.headerTitle}>{state.deviceName}</Text>
-        <View style={styles.placeholder} />
-      </View>
+      <PageHeader title={state.deviceName} />
 
       {/* 设备状态 */}
       <View style={styles.deviceArea}>
@@ -79,16 +72,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#000",
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  backBtn: { padding: 8 },
-  headerTitle: { color: "#fff", fontSize: 18, fontWeight: "600" },
-  placeholder: { width: 40 },
   deviceArea: { alignItems: "center", marginTop: 40 },
   deviceIcon: {
     width: 120,

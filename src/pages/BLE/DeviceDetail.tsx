@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { StyleSheet, Text, View, Pressable, ScrollView, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { PageHeader } from "@/components/PageHeader";
 import { Device, Service, Characteristic } from "react-native-ble-plx";
 import { Buffer } from "buffer";
 
@@ -31,7 +31,6 @@ const STANDARD_UUIDS: Record<string, string> = {
 };
 
 export function DeviceDetail({ device, onDisconnect, onBack }: DeviceDetailProps) {
-  const router = useRouter();
   const [services, setServices] = useState<Service[]>([]);
   const [characteristics, setCharacteristics] = useState<Map<string, Characteristic[]>>(new Map());
   const [sensorData, setSensorData] = useState<{ temperature?: number; humidity?: number; battery?: number }>({});
@@ -438,25 +437,16 @@ export function DeviceDetail({ device, onDisconnect, onBack }: DeviceDetailProps
   return (
     <View style={styles.container}>
       {/* 头部 */}
-      <View style={styles.header}>
-        <Pressable onPress={() => {
-          // 返回按钮：只返回列表，保持连接
-          if (onBack) {
-            onBack();
-          }
-        }} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color="#fff" />
-        </Pressable>
-        <Text style={styles.headerTitle} numberOfLines={1}>
-          {device.name || '未知设备'}
-        </Text>
-        <Pressable onPress={() => {
-          // 断开按钮：断开连接 + 返回列表
-          onDisconnect();
-        }} style={styles.disconnectBtn}>
-          <Text style={styles.disconnectText}>断开</Text>
-        </Pressable>
-      </View>
+      <PageHeader
+        title={device.name || '未知设备'}
+        right={
+          <Pressable onPress={onDisconnect} style={styles.disconnectBtn}>
+            <Text style={styles.disconnectText}>断开</Text>
+          </Pressable>
+        }
+        titleCentered
+        onBack={onBack}
+      />
 
       <ScrollView style={styles.content}>
         {/* 设备信息 */}
@@ -509,23 +499,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
-  },
-  backBtn: { padding: 8 },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-    flex: 1,
-    textAlign: 'center',
-    marginHorizontal: 12,
   },
   disconnectBtn: {
     backgroundColor: 'rgba(244,67,54,0.2)',

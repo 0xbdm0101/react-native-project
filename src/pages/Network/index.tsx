@@ -11,8 +11,9 @@ import {
   Modal,
   FlatList,
   TouchableOpacity,
+  Pressable,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { PageHeader } from "@/components/PageHeader";
 import { useHttpRequest } from "./hooks/useHttpRequest";
 import { useWebSocket } from "./hooks/useWebSocket";
 import RequestBuilder from "./components/RequestBuilder";
@@ -24,7 +25,6 @@ import type { RequestHistoryItem } from "./types";
 type TabKey = "http" | "websocket";
 
 export default function NetworkPage() {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>("http");
 
   const http = useHttpRequest();
@@ -38,20 +38,19 @@ export default function NetworkPage() {
   return (
     <View style={styles.container}>
       {/* 顶部标题 */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backBtnText}>← 返回</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>{UI_TEXTS.PAGE_TITLE}</Text>
-        {activeTab === "http" && (
-          <TouchableOpacity
-            onPress={() => http.setHistoryVisible(true)}
-            style={styles.historyButton}
-          >
-            <Text style={styles.historyButtonText}>📋</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      <PageHeader
+        title={UI_TEXTS.PAGE_TITLE}
+        right={
+          activeTab === "http" ? (
+            <Pressable
+              onPress={() => http.setHistoryVisible(true)}
+              style={styles.historyButton}
+            >
+              <Text style={styles.historyButtonText}>📋</Text>
+            </Pressable>
+          ) : undefined
+        }
+      />
 
       {/* 标签切换 */}
       <View style={styles.tabBar}>
@@ -206,28 +205,7 @@ function HistoryRow({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BG_DARK,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 4,
-  },
-  backBtn: {
-    marginRight: 12,
-    padding: 4,
-  },
-  backBtnText: {
-    color: COLORS.PRIMARY,
-    fontSize: 16,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: COLORS.TEXT_PRIMARY,
+    backgroundColor: "#000",
   },
   historyButton: {
     padding: 8,

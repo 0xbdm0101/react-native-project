@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { PageHeader } from "@/components/PageHeader";
 import { useMQTT } from "./hooks/useMQTT";
 import { QoS } from "./constants";
 
@@ -87,7 +87,6 @@ const DEVICE_CONTROLS: DeviceControl[] = [
 // ==================== 主页面 ====================
 
 export default function MQTTOperationsPage() {
-  const router = useRouter();
   const { connectionStatus, publish, connect, broker } = useMQTT();
 
   // 设备状态
@@ -186,13 +185,7 @@ export default function MQTTOperationsPage() {
   return (
     <View style={styles.container}>
       {/* 头部 */}
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color="#fff" />
-        </Pressable>
-        <Text style={styles.headerTitle}>设备控制</Text>
-        <View style={styles.placeholder} />
-      </View>
+      <PageHeader title="设备控制" />
 
       {/* 连接状态 */}
       <View style={styles.statusBar}>
@@ -285,25 +278,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#000",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
-  },
-  backBtn: {
-    padding: 8,
-  },
-  headerTitle: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  placeholder: {
-    width: 40,
   },
   statusBar: {
     flexDirection: "row",

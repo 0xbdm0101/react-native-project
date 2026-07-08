@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { StyleSheet, Text, View, Pressable, ScrollView, TextInput, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { PageHeader } from "@/components/PageHeader";
 import { useMQTT } from "./hooks/useMQTT";
 import { BrokerCard } from "./components/BrokerCard";
 import {
@@ -293,13 +294,7 @@ export default function MQTTPage() {
   return (
     <View style={styles.container}>
       {/* 头部 */}
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color="#fff" />
-        </Pressable>
-        <Text style={styles.headerTitle}>MQTT</Text>
-        <View style={styles.placeholder} />
-      </View>
+      <PageHeader title="MQTT" />
 
       <ScrollView style={styles.content}>
         {/* 错误提示 */}
@@ -522,21 +517,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#000",
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
-  },
-  backBtn: { padding: 8 },
-  headerTitle: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  placeholder: { width: 40 },
   content: {
     flex: 1,
   },
