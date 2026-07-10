@@ -1,9 +1,10 @@
 /**
  * 摄像头预览 + 取景框 + 识别高亮
  * 封装 expo-camera 的 CameraView，叠加取景框 UI
+ * 使用 React.memo 避免父组件重渲染时重复渲染原生相机视图
  */
 
-import React from "react";
+import React, { memo } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { CameraView } from "expo-camera";
 import type { BarcodeFormat } from "../constants";
@@ -29,7 +30,7 @@ interface CameraPreviewProps {
 
 // ==================== 组件 ====================
 
-export default function CameraPreview({
+function CameraPreview({
   isActive,
   torchEnabled,
   barcodeTypes,
@@ -44,6 +45,7 @@ export default function CameraPreview({
         <CameraView
           style={styles.camera}
           facing="back"
+          active={isActive}
           enableTorch={torchEnabled}
           barcodeScannerSettings={{
             barcodeTypes: barcodeTypes as any[],
@@ -206,3 +208,5 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
 });
+
+export default memo(CameraPreview);

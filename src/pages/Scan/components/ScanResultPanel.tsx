@@ -45,6 +45,16 @@ export default function ScanResultPanel({
   const [copied, setCopied] = useState(false);
   const [slideAnim] = useState(() => new Animated.Value(0));
 
+  // 安全值，result 为 null 时使用兜底
+  const data = result?.data ?? "";
+  const format = result?.format;
+  const timestamp = result?.timestamp ?? 0;
+  const contentType = result?.contentType ?? ContentType.UNKNOWN;
+
+  const actions =
+    CONTENT_TYPE_ACTIONS[contentType] ??
+    CONTENT_TYPE_ACTIONS[ContentType.UNKNOWN];
+
   // 面板滑入动画
   React.useEffect(() => {
     if (result) {
@@ -60,56 +70,49 @@ export default function ScanResultPanel({
     }
   }, [result, slideAnim]);
 
-  // 无结果不渲染
-  if (!result) return null;
-
-  const actions =
-    CONTENT_TYPE_ACTIONS[result.contentType] ??
-    CONTENT_TYPE_ACTIONS[ContentType.UNKNOWN];
-
-  // 复制
+  // 复制 — 所有 hooks 必须在 return 之前调用
   const handleCopy = useCallback(async () => {
     try {
-      await Clipboard.setStringAsync(result.data);
+      await Clipboard.setStringAsync(data);
       setCopied(true);
       console.log("📋 已复制到剪贴板");
       setTimeout(() => setCopied(false), 2000);
     } catch (err: any) {
       console.error("❌ 复制失败:", err.message);
     }
-  }, [result.data]);
+  }, [data]);
 
   // 分享
   const handleShare = useCallback(async () => {
     try {
-      await Share.share({
-        message: result.data,
-      });
+      await Share.share({ message: data });
     } catch (err: any) {
-      // 用户取消分享不报错
       if (!err.message?.includes("cancelled")) {
         console.error("❌ 分享失败:", err.message);
       }
     }
-  }, [result.data]);
+  }, [data]);
 
   // 打开链接
   const handleOpenLink = useCallback(async () => {
     try {
-      const canOpen = await canOpenURL(result.data);
+      const canOpen = await canOpenURL(data);
       if (canOpen) {
-        await openURL(result.data);
-        console.log("🔗 打开链接:", result.data);
+        await openURL(data);
+        console.log("🔗 打开链接:", data);
       } else {
-        console.log("⚠️ 无法打开的链接:", result.data);
+        console.log("⚠️ 无法打开的链接:", data);
       }
     } catch (err: any) {
       console.error("❌ 打开链接失败:", err.message);
     }
-  }, [result.data]);
+  }, [data]);
+
+  // 所有 hooks 调用完毕，此时才可以早期返回
+  if (!result) return null;
 
   // 解析时间
-  const timeStr = new Date(result.timestamp).toLocaleTimeString("zh-CN");
+  const timeStr = new Date(timestamp).toLocaleTimeString("zh-CN");
 
   const translateY = slideAnim.interpolate({
     inputRange: [0, 1],
@@ -132,7 +135,7 @@ export default function ScanResultPanel({
         <View style={styles.header}>
           <View style={styles.formatBadge}>
             <Text style={styles.formatText}>
-              {getBarcodeFormatName(result.format)}
+              {getBarcodeFormatName(format!)}
             </Text>
           </View>
           <Text style={styles.timeText}>{timeStr}</Text>
@@ -141,7 +144,7 @@ export default function ScanResultPanel({
         {/* 扫码数据 */}
         <View style={styles.dataContainer}>
           <Text style={styles.dataText} selectable>
-            {result.data}
+            {data}
           </Text>
         </View>
 

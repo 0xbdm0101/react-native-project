@@ -10,6 +10,7 @@ const ROUTE_MAP: Record<string, string> = {
   bluetooth: "/ble-search",
   mqtt: "/mqtt",
   network: "/network",
+  qrScanner: "/scan",
 };
 
 export function Home() {
