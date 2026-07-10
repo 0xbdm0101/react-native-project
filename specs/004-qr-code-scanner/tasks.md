@@ -20,9 +20,9 @@
 
 **Purpose**: 项目初始化、依赖安装、目录和路由创建
 
-- [ ] T001 Install expo-clipboard via `npx expo install expo-clipboard` and verify in package.json
-- [ ] T002 [P] Create directory structure: `src/pages/Scan/`, `src/pages/Scan/hooks/`, `src/pages/Scan/components/`
-- [ ] T003 [P] Create route file `app/scan.tsx` that re-exports default from `src/pages/Scan/index.tsx`
+- [x] T001 Install expo-clipboard via `npx expo install expo-clipboard` and verify in package.json
+- [x] T002 [P] Create directory structure: `src/pages/Scan/`, `src/pages/Scan/hooks/`, `src/pages/Scan/components/`
+- [x] T003 [P] Create route file `app/scan.tsx` that re-exports default from `src/pages/Scan/index.tsx`
 
 ---
 
@@ -32,8 +32,8 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 [P] Create type definitions in `src/pages/Scan/types.ts`: ScanResult, CameraState interfaces per data-model.md + all enum types (BarcodeFormat, ContentType, PermissionStatus, ScanMode, CameraErrorType)
-- [ ] T005 [P] Create constants in `src/pages/Scan/constants.ts`: all enums, UI_TEXTS (camera permission, scan hints, error messages, button labels), BARCODE_FORMAT_NAMES mapping, CONTENT_TYPE_ACTIONS mapping, COLORS (viewfinder, highlight, background), SCAN_INTERVAL (debounce delay), TIMEOUTS
+- [x] T004 [P] Create type definitions in `src/pages/Scan/types.ts`: ScanResult, CameraState interfaces per data-model.md + all enum types (BarcodeFormat, ContentType, PermissionStatus, ScanMode, CameraErrorType)
+- [x] T005 [P] Create constants in `src/pages/Scan/constants.ts`: all enums, UI_TEXTS (camera permission, scan hints, error messages, button labels), BARCODE_FORMAT_NAMES mapping, CONTENT_TYPE_ACTIONS mapping, COLORS (viewfinder, highlight, background), SCAN_INTERVAL (debounce delay), TIMEOUTS
 
 **Checkpoint**: 类型和常量就绪 —— 用户故事实现可以开始
 
@@ -47,12 +47,12 @@
 
 ### Implementation for User Story 1
 
-- [ ] T006 [P] [US1] Create PermissionGuide component in `src/pages/Scan/components/PermissionGuide.tsx`: render when camera permission denied, show icon + explanation text + "前往设置" button that calls `Linking.openSettings()`
-- [ ] T007 [US1] Create useScanner hook in `src/pages/Scan/hooks/useScanner.ts`: manage camera permission (`useCameraPermissions`), camera active state, torch toggle, barcode scan handler with debounce, scan result state, error state. Return: `{ permission, isActive, torchEnabled, scanResult, error, toggleTorch, clearResult, setIsActive }`
-- [ ] T008 [US1] Create CameraPreview component in `src/pages/Scan/components/CameraPreview.tsx`: render `CameraView` from expo-camera with `barcodeScannerSettings` (QR only for US1), overlay viewfinder frame, highlight recognized barcode region via animated border, flash on/off based on torch state, handle camera errors
-- [ ] T009 [US1] Create ScanResultPanel component in `src/pages/Scan/components/ScanResultPanel.tsx`: animated bottom panel showing scan result (format label, content text, timestamp), copy button with "已复制" toast feedback, clear/close action. Accept `ScanResult | null` prop
-- [ ] T010 [US1] Create main page in `src/pages/Scan/index.tsx`: compose PageHeader + PermissionGuide (when denied) + CameraPreview + ScanResultPanel, wire useScanner hook, handle AppState changes (pause camera on background, resume on foreground), cleanup camera on unmount
-- [ ] T011 [US1] Add app state lifecycle handling in `src/pages/Scan/index.tsx` (or via useScanner hook): listen to `AppState` changes, set `isActive=false` when backgrounded, `isActive=true` when foregrounded
+- [x] T006 [P] [US1] Create PermissionGuide component in `src/pages/Scan/components/PermissionGuide.tsx`: render when camera permission denied, show icon + explanation text + "前往设置" button that calls `Linking.openSettings()`
+- [x] T007 [US1] Create useScanner hook in `src/pages/Scan/hooks/useScanner.ts`: manage camera permission (`useCameraPermissions`), camera active state, torch toggle, barcode scan handler with debounce, scan result state, error state. Return: `{ permission, isActive, torchEnabled, scanResult, error, toggleTorch, clearResult, setIsActive }`
+- [x] T008 [US1] Create CameraPreview component in `src/pages/Scan/components/CameraPreview.tsx`: render `CameraView` from expo-camera with `barcodeScannerSettings` (QR only for US1), overlay viewfinder frame, highlight recognized barcode region via animated border, flash on/off based on torch state, handle camera errors
+- [x] T009 [US1] Create ScanResultPanel component in `src/pages/Scan/components/ScanResultPanel.tsx`: animated bottom panel showing scan result (format label, content text, timestamp), copy button with "已复制" toast feedback, clear/close action. Accept `ScanResult | null` prop
+- [x] T010 [US1] Create main page in `src/pages/Scan/index.tsx`: compose PageHeader + PermissionGuide (when denied) + CameraPreview + ScanResultPanel, wire useScanner hook, handle AppState changes (pause camera on background, resume on foreground), cleanup camera on unmount
+- [x] T011 [US1] Add app state lifecycle handling in `src/pages/Scan/index.tsx` (or via useScanner hook): listen to `AppState` changes, set `isActive=false` when backgrounded, `isActive=true` when foregrounded
 
 **Checkpoint**: QR 码扫描 MVP 可用 —— 用户可扫码、看结果、复制
 
@@ -66,8 +66,8 @@
 
 ### Implementation for User Story 2
 
-- [ ] T012 [US2] Update `barcodeScannerSettings` in `src/pages/Scan/components/CameraPreview.tsx`: extend barcodeTypes from `['qr']` to full list `['qr', 'ean13', 'ean8', 'code128', 'code39', 'upc_a', 'upc_e']`, reference constants from `src/pages/Scan/constants.ts`
-- [ ] T013 [US2] Update ScanResultPanel in `src/pages/Scan/components/ScanResultPanel.tsx`: display human-readable barcode format name using `BARCODE_FORMAT_NAMES` mapping, show format-specific icon (QR vs barcode), add format badge/tag in result card
+- [x] T012 [US2] Update `barcodeScannerSettings` in `src/pages/Scan/components/CameraPreview.tsx`: extend barcodeTypes from `['qr']` to full list `['qr', 'ean13', 'ean8', 'code128', 'code39', 'upc_a', 'upc_e']`, reference constants from `src/pages/Scan/constants.ts`
+- [x] T013 [US2] Update ScanResultPanel in `src/pages/Scan/components/ScanResultPanel.tsx`: display human-readable barcode format name using `BARCODE_FORMAT_NAMES` mapping, show format-specific icon (QR vs barcode), add format badge/tag in result card
 
 **Checkpoint**: 二维码 + 条形码均已可用，码制信息正确展示
 
@@ -81,10 +81,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T014 [P] [US3] Implement share action in `src/pages/Scan/components/ScanResultPanel.tsx`: add "分享" button, call `Share.share({ message: scanResult.data })` from React Native, handle share cancel gracefully
-- [ ] T015 [P] [US3] Implement open URL action in `src/pages/Scan/components/ScanResultPanel.tsx`: add "打开链接" button (visible only when contentType is URL), call `Linking.openURL(scanResult.data)`, handle invalid URL error with toast
-- [ ] T016 [US3] Implement smart action logic in `src/pages/Scan/components/ScanResultPanel.tsx`: use `CONTENT_TYPE_ACTIONS` mapping to control button visibility (URL shows all 3 buttons, non-URL hides "打开链接"), add special protocol handling (tel:, mailto:, wifi:) with `Linking.canOpenURL()` pre-check
-- [ ] T017 [US3] Add scan result indicator: show subtle haptic feedback on successful scan (optional, platform-dependent via `expo-haptics` if available, else skip)
+- [x] T014 [P] [US3] Implement share action in `src/pages/Scan/components/ScanResultPanel.tsx`: add "分享" button, call `Share.share({ message: scanResult.data })` from React Native, handle share cancel gracefully
+- [x] T015 [P] [US3] Implement open URL action in `src/pages/Scan/components/ScanResultPanel.tsx`: add "打开链接" button (visible only when contentType is URL), call `Linking.openURL(scanResult.data)`, handle invalid URL error with toast
+- [x] T016 [US3] Implement smart action logic in `src/pages/Scan/components/ScanResultPanel.tsx`: use `CONTENT_TYPE_ACTIONS` mapping to control button visibility (URL shows all 3 buttons, non-URL hides "打开链接"), add special protocol handling (tel:, mailto:, wifi:) with `Linking.canOpenURL()` pre-check
+- [x] T017 [US3] Add scan result indicator: show subtle haptic feedback on successful scan (optional, platform-dependent via `expo-haptics` if available, else skip)
 
 **Checkpoint**: 全功能扫码 —— 扫描 + 复制 + 分享 + 打开链接
 
@@ -94,11 +94,11 @@
 
 **Purpose**: 边界情况处理、错误覆盖、最终验证
 
-- [ ] T018 [P] Handle scan timeout in `src/pages/Scan/hooks/useScanner.ts`: if no barcode detected within TIMEOUT.NO_SCAN period, show hint "未识别到条码，请调整角度或距离" below viewfinder
-- [ ] T019 [P] Handle empty scan result in `src/pages/Scan/hooks/useScanner.ts`: if barcode data is empty string, show toast "二维码内容为空" and skip result update
-- [ ] T020 [P] Handle camera errors in `src/pages/Scan/hooks/useScanner.ts`: catch camera unavailable/occupied errors, set error state with user-friendly message per `CameraErrorType` mapping
-- [ ] T021 [P] Add dark/low-light hint in `src/pages/Scan/components/CameraPreview.tsx`: show floating torch toggle hint "光线不足？轻点开启闪光灯" when torch is off (purely UX enhancement)
-- [ ] T022 Run through all quickstart.md validation scenarios (7 scenarios) on real device, verify all pass
+- [x] T018 [P] Handle scan timeout in `src/pages/Scan/hooks/useScanner.ts`: if no barcode detected within TIMEOUT.NO_SCAN period, show hint "未识别到条码，请调整角度或距离" below viewfinder
+- [x] T019 [P] Handle empty scan result in `src/pages/Scan/hooks/useScanner.ts`: if barcode data is empty string, show toast "二维码内容为空" and skip result update
+- [x] T020 [P] Handle camera errors in `src/pages/Scan/hooks/useScanner.ts`: catch camera unavailable/occupied errors, set error state with user-friendly message per `CameraErrorType` mapping
+- [x] T021 [P] Add dark/low-light hint in `src/pages/Scan/components/CameraPreview.tsx`: show floating torch toggle hint "光线不足？轻点开启闪光灯" when torch is off (purely UX enhancement)
+- [x] T022 Run through all quickstart.md validation scenarios (7 scenarios) on real device, verify all pass
 
 ---
 
