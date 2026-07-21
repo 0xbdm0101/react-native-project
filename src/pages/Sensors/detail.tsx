@@ -4,7 +4,7 @@
  */
 
 import React, { useCallback } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Linking } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { PageHeader } from "@/components/PageHeader";
 import { useSensorData } from "./hooks/useSensorData";
@@ -38,9 +38,11 @@ export default function SensorDetailPage() {
     monitorStatus,
     error,
     sampleRate,
+    permissionStatus,
     startMonitoring,
     stopMonitoring,
     changeSampleRate,
+    requestPedometerPermission,
   } = useSensorData(sensorType);
 
   const isRunning = monitorStatus === MonitorStatus.RUNNING;
@@ -67,6 +69,35 @@ export default function SensorDetailPage() {
 
   // 渲染数据展示组件
   const renderDataDisplay = () => {
+    // 计步器权限被拒绝
+    if (sensorType === SensorType.PEDOMETER && permissionStatus === "denied") {
+      return (
+        <View style={styles.centerContainer}>
+          <Text style={styles.permissionIcon}>🔒</Text>
+          <Text style={styles.permissionTitle}>
+            {UI_TEXTS.ERROR_PERMISSION_DENIED}
+          </Text>
+          <TouchableOpacity
+            style={styles.permissionButton}
+            onPress={() => Linking.openSettings()}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.permissionButtonText}>前往设置</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.permissionRetry}
+            onPress={async () => {
+              const granted = await requestPedometerPermission();
+              if (granted) startMonitoring();
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.permissionRetryText}>重新授权</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
     if (error) {
       return (
         <View style={styles.centerContainer}>
@@ -122,14 +153,16 @@ export default function SensorDetailPage() {
         title={UI_TEXTS.DETAIL_PAGE_TITLE(sensorName)}
       />
 
-      {/* 采样频率选择器 */}
-      <View style={styles.rateSection}>
-        <Text style={styles.rateLabel}>{UI_TEXTS.RATE_LABEL}</Text>
-        <SampleRatePicker
-          currentRate={sampleRate}
-          onRateChange={handleRateChange}
-        />
-      </View>
+      {/* 采样频率选择器（计步器不支持频率调节） */}
+      {sensorType !== SensorType.PEDOMETER && (
+        <View style={styles.rateSection}>
+          <Text style={styles.rateLabel}>{UI_TEXTS.RATE_LABEL}</Text>
+          <SampleRatePicker
+            currentRate={sampleRate}
+            onRateChange={handleRateChange}
+          />
+        </View>
+      )}
 
       {/* 数据展示 */}
       <View style={styles.dataSection}>{renderDataDisplay()}</View>
@@ -225,5 +258,36 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
     lineHeight: 24,
+  },
+  permissionIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  permissionTitle: {
+    color: COLORS.TEXT_PRIMARY,
+    fontSize: 16,
+    textAlign: "center",
+    marginBottom: 24,
+    lineHeight: 24,
+    paddingHorizontal: 20,
+  },
+  permissionButton: {
+    backgroundColor: COLORS.PRIMARY,
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: STYLE_CONFIG.CARD.borderRadius,
+    marginBottom: 12,
+  },
+  permissionButtonText: {
+    color: COLORS.BG_DARK,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  permissionRetry: {
+    paddingVertical: 8,
+  },
+  permissionRetryText: {
+    color: COLORS.PRIMARY,
+    fontSize: 14,
   },
 });
