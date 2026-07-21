@@ -11,6 +11,7 @@ const ROUTE_MAP: Record<string, string> = {
   mqtt: "/mqtt",
   network: "/network",
   qrScanner: "/scan",
+  sensors: "/sensors",
 };
 
 export function Home() {
